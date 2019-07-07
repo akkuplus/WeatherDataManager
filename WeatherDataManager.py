@@ -5,7 +5,7 @@ The WDM enriches weather data with information from weather data station, and ap
 """
 
 class DataRequester(object):
-    """ Requests and save distant weather data into a local zip file. """
+    """Requests and save distant weather data into a local zip file."""
 
     def __init__(self):
         pass
@@ -16,7 +16,7 @@ class DataRequester(object):
 
 
     def get_distant_filename(self):
-        """ Scrap HTML site to extract newest link. """
+        """Scrap HTML site to extract newest link."""
         from bs4 import BeautifulSoup
         import requests
         from urllib.parse import urljoin
@@ -41,7 +41,7 @@ class DataRequester(object):
 
 
     def save_zip_locally(self):
-        """ Load last weather data saved in zip. """
+        """Load last weather data saved in zip."""
         # example: url = 'https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-06-21_wetterdaten.zip'
         import requests
         import urllib.parse
@@ -69,7 +69,7 @@ class DataRequester(object):
 
 
 class DataManager(object):
-    """ DataManager imports data of weather stations and weather measure, finds the nearest zip ode for a given data station, and import new wether measure to SQL table. """
+    """DataManager imports data of weather stations and weather measure, finds the nearest zip ode for a given data station, and import new wether measure to SQL table."""
 
     def __init__(self, saved_zipfile_path=""):
         from pathlib import Path
@@ -81,7 +81,7 @@ class DataManager(object):
 
 
     def import_weather_stations(self):
-        """ Import weather stations and corresponding data from current locally saved zip file. """
+        """Import weather stations and corresponding data from current locally saved zip file."""
         import pandas as pd
         import zipfile
 
@@ -135,13 +135,13 @@ class DataManager(object):
 
         file_name = 'data/geodaten_de.csv' # local filename of static mapping data: relates zip codes to coordinates in Germany
         new_columns = ['Plz', 'Ort', 'Latitude', 'Longitude']
-        dtypes: {'Plz': str, 'Ort': str, 'Latitude': float, 'Longitude': float}
 
-        def cast_to_str(x):
-            if len(x) > 4:
-                return str(x)
-            else:
-                return "0" + str(x)
+        # parse zip code with a leading zero:
+        #def cast_to_str(x):
+        #    if len(x) > 4:
+        #        return str(x)
+        #    else:
+        #        return "0" + str(x)
 
         try:
             # ensure utf-encoding, ensure delimiter ";"
@@ -150,8 +150,8 @@ class DataManager(object):
                 index_col=False,
                 header=0,
                 names=new_columns,
-                dtype={'Plz': np.str, 'Ort': str, 'Latitude': float,
-                    'Longitude': float},
+                dtype={'Plz': np.str, 'Ort': np.str, 'Latitude': np.float,
+                    'Longitude': np.float},
                 encoding='cp1250'  # converts typical German encoding
                 # converters = {"Plz": cast_to_str}
             )
