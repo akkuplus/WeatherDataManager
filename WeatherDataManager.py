@@ -21,7 +21,7 @@ class DataRequester(object):
         import requests
         from urllib.parse import urljoin
 
-        # extract current links in html file
+        # extract current link in html file
         self.url = "https://dbup2date.uni-bayreuth.de/blocklysql/" # static link
         html_file = "wetterdaten.html" # static filename
         selfhtml_path = urljoin(self.url, html_file)
@@ -30,14 +30,14 @@ class DataRequester(object):
         soup = BeautifulSoup(resp.content, features="html.parser")
         for link in soup.find_all('a', href=True):
             if "CSV" in link['href']:
-                zip_file_path = link['href'] # example: "downloads\wetterdaten\2019-07-07_wetterdaten_CSV.zip"
+                zip_file_url = link['href'] # example: "downloads\wetterdaten\2019-07-07_wetterdaten_CSV.zip"
                 break
 
         # get distant zip file path
-        if zip_file_path:
-            self.last_zip_file = zip_file_path
+        if zip_file_url:
+            self.last_zip_file = zip_file_url
         else:
-            raise FileNotFoundError("Can't find zipfile '*wetterdaten_CSV.zip' in HTML")
+            raise FileNotFoundError("Can't find a zipfile '*wetterdaten_CSV.zip' in HTML")
 
 
     def save_zip_locally(self):
@@ -47,13 +47,9 @@ class DataRequester(object):
         import urllib.parse
         from pathlib import Path
 
-
         # load last distant zip file
-        #full_url_zip = PurePath(self.url).joinpath(self.last_zip_file) # build full url to file
         full_url_zip = urllib.parse.urljoin(self.url, self.last_zip_file)
-        print(full_url_zip)
         r = requests.get(full_url_zip, allow_redirects=True)
-        #file_name = self.get_last_filename(r.headers.get('content-disposition'))
 
         # save file locally: "/data/*.zip"
         zip_file_name = self.last_zip_file.rsplit(sep="/", maxsplit=1)[-1] # split url by "/" and take most right element
@@ -61,116 +57,27 @@ class DataRequester(object):
 
         try:
             open(self.saved_zipfile_path, 'wb').write(r.content)
-            print("Saved {}".format(self.saved_zipfile_path))
+            print("Saved {} from {}".format(self.saved_zipfile_path, full_url_zip))
             dir(self.saved_zipfile_path)
         except IOError as ioerr:
             print("Error writing {}".format(self.saved_zipfile_path))
             print(ioerr)
 
 
-class DataBaseManager(object):
-    """Connect to Databases and inserts new weather data."""
-
-    def __init__(self):
-        self.connect_database()
-
-
-    def connect_database(self):
-        """Connect to local SQLite database."""
-        import sqlalchemy as db
-
-        sqlite_db = {'drivername': 'sqlite', 'database': 'data/weather_repo.sqlite'} # if file in subfolder, don't start string for subfolder with "/"
-
-        db_conn = db.engine.url.URL(**sqlite_db)
-        self.engine = db.create_engine(db_conn)  # create connection to database
-        self.connection = self.engine.connect()  # connect for interaction with database
-        self.metadata = db.MetaData()
-        print("Connected to Database '{}'".format(self.engine))
-
-
-    def create_table_stations(self):
-        """Create schema for table of weather data stations."""
-        import sqlalchemy as db
-
-        self.stations = db.Table('stations', self.metadata,
-        db.Column('S_ID', db.Integer()),
-        db.Column('Standort', db.String(255), nullable=False),
-        db.Column('Geo_Breite', db.Float(), nullable=False),
-        db.Column('Geo_Laenge', db.Float(), nullable=False),
-        db.Column('Hoehe', db.Integer(), nullable=False),
-        db.Column('Betreiber', db.String(255), nullable=False),
-        db.Column('PLZ_matched', db.String(5), nullable=False),
-        db.Column('Ort_matched', db.String(255), nullable=False),
-        db.Column('Latitude_matched', db.Float(), nullable=False),
-        db.Column('Longitude_matched', db.Float(), nullable=False),
-        extend_existing=True
-        )
-
-        self.stations.create(self.engine, checkfirst=True)  # Create the table
-
-
-    def create_table_measures(self, table_name = None):
-        """Create schema for temporary table of weather data measures that extend existing data measures."""
-        import sqlalchemy as db
-
-        if table_name is None:
-            table_name = input("Name of new table for weather data measures, e.g. 'temp'? ")
-
-        self.measures = db.Table(table_name, self.metadata,
-        db.Column('Stations_ID', db.Integer(), nullable=False, primary_key=True),
-        db.Column('Datum', db.DateTime(), nullable=False, primary_key=True),
-        db.Column('Qualitaet', db.Integer(), nullable=True),
-        db.Column('Min_5cm', db.Float(), nullable=True),
-        db.Column('Min_2m', db.Float(), nullable=True),
-        db.Column('Mittel_2m', db.Float(), nullable=True),
-        db.Column('Max_2m', db.Float(), nullable=True),
-        db.Column('Relative_Feuchte', db.Float(), nullable=True),
-        db.Column('Mittel_Windstaerke', db.Float(), nullable=True),
-        db.Column('Max_Windgeschwindigkeit', db.Float(), nullable=True),
-        db.Column('Sonnenscheindauer', db.Float(), nullable=True),
-        db.Column('Mittel_Bedeckungsgrad', db.Float(), nullable=True),
-        db.Column('Niederschlagshoehe', db.Float(), nullable=True),
-        db.Column('Mittel_Luftdruck', db.Float(), nullable=True),
-        extend_existing=True
-        )
-
-        self.measures.create(self.engine, checkfirst=True)  # Creates the table
-
-    def reset_temporal_table(self):
-        """ Recreate schema for temporal weather data table in database."""
-        from sqlalchemy.orm import sessionmaker
-        Session = sessionmaker()
-        Session.configure(bind=self.engine)
-        session = Session()
-
-        #create schema for table measure
-        self.create_table_measures('temp')
-
-        # reset the temporary weather data table in database pertaining the schema
-        self.measures.drop(self.engine, checkfirst=True)
-        session.commit()
-
-        self.measures.create(self.engine, checkfirst=True)
-        session.commit()
-        print("Reset table '{}'".format(self.measures.name))
-
-
-    def delete_old_weather_data(self):
-        from sqlalchemy.sql import text
-        self.engine.execute(text('DELETE from "{}" where Datum in (SELECT DISTINCT Datum from measures);'.format(self.measures.name)))
-
-
-
 class DataManager(object):
-    """DataManager imports data of weather stations and weather measure, finds the nearest zip ode for a given data station, and import new wether measure to SQL table."""
+    """DataManager imports data of weather stations and weather measures, finds the nearest zip code for a given data station, and imports new wether measure to SQL table."""
 
     def __init__(self, saved_zipfile_path=""):
         from pathlib import Path
 
-        if not saved_zipfile_path:
-            self.saved_zipfile_path = Path.cwd().joinpath("data").joinpath("2019-07-02_wetterdaten_CSV.zip")
-        else:
+        self.connect_database()
+
+        try:
             self.saved_zipfile_path = Path(saved_zipfile_path)
+            # self.saved_zipfile_path = Path.cwd().joinpath("data").joinpath("2019-07-02_wetterdaten_CSV.zip")
+        except ValueError as valerr:
+            print("Error using path to las zip file {}".format(self.saved_zipfile_path))
+            print(valerr)
 
 
     def import_weather_stations(self):
@@ -301,16 +208,109 @@ class DataManager(object):
         print(self.data_stations)
 
 
-    def SQL_from_weatherstations(self, db: DataBaseManager):
-        print("Connected to Database '{}':".format(db.engine))
-        self.data_stations.to_sql('stations', con=db.engine, if_exists='append', index=False)
+    def sql_from_weatherstations(self):
+        print("Connected to Database '{}':".format(self.engine))
+        self.data_stations.to_sql('stations', con=self.engine, if_exists='append', index=False)
 
 
-    def sql_from_weathermeasures(self, db: DataBaseManager):
-        print("Connected to Database '{}'".format(db.engine))
-        table_name = db.measures.fullname # for example: table_name = "temp"
-        self.data_weather.to_sql(table_name, con=db.engine, if_exists='replace', index=False)
+    def sql_from_weathermeasures(self):
+        print("Connected to Database '{}'".format(self.engine))
+        table_name = self.measures.fullname # for example: table_name = "temp"
+        self.data_weather.to_sql(table_name, con=self.engine, if_exists='replace', index=False)
         print("Transferred DataFrame to table '{}'".format(table_name))
+
+
+    def connect_database(self):
+        """Connect to local SQLite database."""
+        import sqlalchemy as db
+
+        sqlite_db = {'drivername': 'sqlite', 'database': 'data/weather_repo.sqlite'} # if file in subfolder, don't start string for subfolder with "/"
+        db_conn = db.engine.url.URL(**sqlite_db)
+
+        self.engine = db.create_engine(db_conn)  # create connection to database
+        self.connection = self.engine.connect()  # connect for interaction with database
+        self.metadata = db.MetaData()
+        print("Connected to Database '{}'".format(self.engine))
+
+
+    def create_table_stations(self):
+        """Create schema for table of weather data stations."""
+        import sqlalchemy as db
+
+        self.stations = db.Table('stations', self.metadata,
+        db.Column('S_ID', db.Integer()),
+        db.Column('Standort', db.String(255), nullable=False),
+        db.Column('Geo_Breite', db.Float(), nullable=False),
+        db.Column('Geo_Laenge', db.Float(), nullable=False),
+        db.Column('Hoehe', db.Integer(), nullable=False),
+        db.Column('Betreiber', db.String(255), nullable=False),
+        db.Column('PLZ_matched', db.String(5), nullable=False),
+        db.Column('Ort_matched', db.String(255), nullable=False),
+        db.Column('Latitude_matched', db.Float(), nullable=False),
+        db.Column('Longitude_matched', db.Float(), nullable=False),
+        extend_existing=True
+        )
+
+        self.stations.create(self.engine, checkfirst=True)  # Create the table
+
+
+    def create_table_measures(self, table_name = None):
+        """Create schema for temporary table of weather data measures that extend existing data measures."""
+        import sqlalchemy as db
+
+        if table_name is None:
+            table_name = input("Name of new table for weather data measures, e.g. 'temp'? ")
+
+        self.measures = db.Table(table_name, self.metadata,
+        db.Column('Stations_ID', db.Integer(), nullable=False, primary_key=True),
+        db.Column('Datum', db.DateTime(), nullable=False, primary_key=True),
+        db.Column('Qualitaet', db.Integer(), nullable=True),
+        db.Column('Min_5cm', db.Float(), nullable=True),
+        db.Column('Min_2m', db.Float(), nullable=True),
+        db.Column('Mittel_2m', db.Float(), nullable=True),
+        db.Column('Max_2m', db.Float(), nullable=True),
+        db.Column('Relative_Feuchte', db.Float(), nullable=True),
+        db.Column('Mittel_Windstaerke', db.Float(), nullable=True),
+        db.Column('Max_Windgeschwindigkeit', db.Float(), nullable=True),
+        db.Column('Sonnenscheindauer', db.Float(), nullable=True),
+        db.Column('Mittel_Bedeckungsgrad', db.Float(), nullable=True),
+        db.Column('Niederschlagshoehe', db.Float(), nullable=True),
+        db.Column('Mittel_Luftdruck', db.Float(), nullable=True),
+        extend_existing=True
+        )
+
+        self.measures.create(self.engine, checkfirst=True)  # Creates the table
+
+
+    def reset_temporal_table(self):
+        """Recreate temporal weather data table with identical schema in database."""
+        from sqlalchemy.orm import sessionmaker
+
+        Session = sessionmaker()
+        Session.configure(bind=self.engine)
+        session = Session()
+
+        #create schema for table measure
+        self.create_table_measures('temp')
+
+        # reset the temporary weather data table in database pertaining the schema
+        self.measures.drop(self.engine, checkfirst=True)
+        session.commit()
+
+        self.measures.create(self.engine, checkfirst=True)
+        session.commit()
+        print("Reset table '{}'".format(self.measures.name))
+
+
+    def delete_old_weather_data(self):
+        from sqlalchemy.sql import text
+        self.engine.execute(text('DELETE from {} where (Stations_ID, Datum)\
+                                    in (SELECT DISTINCT Stations_ID, Datum from measures);'.format(self.measures.name)))
+
+
+    def insert_new_weather_data(self):
+        from sqlalchemy.sql import text
+        self.engine.execute(text('INSERT INTO measures SELECT * FROM temp;'.format()))
 
 
 def find_last_zipfilename():
@@ -332,13 +332,12 @@ def find_last_zipfilename():
 if __name__ == "__main__":
 
     # TODO: separate classes into files
-    # TODO: use last zip-file
     dr = DataRequester
     dr.get_distant_filename(dr)
-    #dr.save_zip_locally(dr)
-    #print( dr.get_saved_zipfile_path(dr) )
+    dr.save_zip_locally(dr)
+    print( dr.get_saved_zipfile_path(dr) )
 
-    dm = DataManager()
+    dm = DataManager(dr.get_saved_zipfile_path(dr))
     dm.import_weather_stations()
     dm.import_weather_measures()
     dm.import_locational_data()
@@ -346,9 +345,7 @@ if __name__ == "__main__":
     dm.enrich_data_stations()
     dm.get_nearest_zipcode()
 
-    #WeatherDataManager.find_last_zipfilename()
-
-    dbm = DataBaseManager()
-    dbm.reset_temporal_table()
-    dm.sql_from_weathermeasures(dbm)
-    dbm.delete_old_weather_data()
+    dm.reset_temporal_table()
+    dm.sql_from_weathermeasures()
+    dm.delete_old_weather_data()
+    #dm.insert_new_weather_data()
