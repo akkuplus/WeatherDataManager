@@ -85,7 +85,7 @@ class DataBaseManager(object):
         self.engine = db.create_engine(db_conn)  # create connection to database
         self.connection = self.engine.connect()  # connect for interaction with database
         self.metadata = db.MetaData()
-        print("Connected to Database {}.".format(self.engine))
+        print("Connected to Database '{}'".format(self.engine))
 
 
     def create_table_stations(self):
@@ -152,7 +152,13 @@ class DataBaseManager(object):
 
         self.measures.create(self.engine, checkfirst=True)
         session.commit()
-        print("Reset table {}".format(self.measures.name))
+        print("Reset table '{}'".format(self.measures.name))
+
+
+    def delete_old_weather_data(self):
+        from sqlalchemy.sql import text
+        self.engine.execute(text('DELETE from "{}" where Datum in (SELECT DISTINCT Datum from measures);'.format(self.measures.name)))
+
 
 
 class DataManager(object):
@@ -296,15 +302,15 @@ class DataManager(object):
 
 
     def SQL_from_weatherstations(self, db: DataBaseManager):
-        print("Connected to Database {}:".format(db.engine))
+        print("Connected to Database '{}':".format(db.engine))
         self.data_stations.to_sql('stations', con=db.engine, if_exists='append', index=False)
 
 
     def sql_from_weathermeasures(self, db: DataBaseManager):
-        print("Connecting to database {}".format(db.engine))
+        print("Connected to Database '{}'".format(db.engine))
         table_name = db.measures.fullname # for example: table_name = "temp"
         self.data_weather.to_sql(table_name, con=db.engine, if_exists='replace', index=False)
-        print("Transferred dataFrame to table {}".format(table_name))
+        print("Transferred DataFrame to table '{}'".format(table_name))
 
 
 def find_last_zipfilename():
@@ -324,6 +330,9 @@ def find_last_zipfilename():
 
 
 if __name__ == "__main__":
+
+    # TODO: separate classes into files
+    # TODO: use last zip-file
     dr = DataRequester
     dr.get_distant_filename(dr)
     #dr.save_zip_locally(dr)
@@ -342,4 +351,4 @@ if __name__ == "__main__":
     dbm = DataBaseManager()
     dbm.reset_temporal_table()
     dm.sql_from_weathermeasures(dbm)
-
+    dbm.delete_old_weather_data()
