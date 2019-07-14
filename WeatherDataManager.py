@@ -7,18 +7,15 @@ from weather data station, and appends the newest data to an existing SQL table.
 
 
 class DataRequester(object):
-    """Requests and save distant weather data into a local zip file."""
+    """Requests and saves distant weather data into a local zip file."""
 
     def __init__(self):
         self.last_zip_file = ""
         self.saved_zipfile_path = ""
         self.url = ""
 
-    def get_saved_zipfile_path(self):
-        return self.saved_zipfile_path
-
     def get_distant_filename(self):
-        """Scrap HTML site to extract newest link."""
+        """Scrap HTML page to extract newest link."""
         from bs4 import BeautifulSoup
         import requests
         from urllib.parse import urljoin
@@ -26,14 +23,19 @@ class DataRequester(object):
         # extract current link in html file
         self.url = "https://dbup2date.uni-bayreuth.de/blocklysql/"  # static link
         html_file = "wetterdaten.html"  # static filename
-        selfhtml_path = urljoin(self.url, html_file)
+        html_path = urljoin(self.url, html_file)
 
-        resp = requests.get(selfhtml_path, verify=False)
-        soup = BeautifulSoup(resp.content, features="html.parser")
-        for link in soup.find_all('a', href=True):
-            if "CSV" in link['href']:
-                zip_file_url = link['href']  # example: "downloads\wetterdaten\2019-07-07_wetterdaten_CSV.zip"
-                break
+        zip_file_url = None
+        try:
+            resp = requests.get(html_path, verify=False)
+            soup = BeautifulSoup(resp.content, features="html.parser")
+            for link in soup.find_all('a', href=True):
+                if "CSV" in link['href']:
+                    zip_file_url = link['href']  # example: "downloads\wetterdaten\2019-07-07_wetterdaten_CSV.zip"
+                    break
+        except Exception as ex:
+            print("Connection to {} failed.".format(html_path))
+            print(ex)
 
         # get distant zip file path
         if zip_file_url:
@@ -48,22 +50,31 @@ class DataRequester(object):
         import urllib.parse
         from pathlib import Path
 
-        # load last distant zip file
-        full_url_zip = urllib.parse.urljoin(self.url, self.last_zip_file)
-        r = requests.get(full_url_zip, allow_redirects=True, verify=False)
-
-        # save file locally: "/data/*.zip"
-        zip_file_name = self.last_zip_file.rsplit(sep="/", maxsplit=1)[-1]  # split url by "/"
-        # and take most right element
-        self.saved_zipfile_path = Path.cwd().joinpath("data").joinpath(zip_file_name)
-
+        # load last distant zip file from web
+        r = None
+        full_url_zip = None
         try:
-            open(self.saved_zipfile_path.name, 'wb').write(r.content)
+            full_url_zip = urllib.parse.urljoin(self.url, self.last_zip_file)
+            r = requests.get(full_url_zip, allow_redirects=True, verify=False)
+
+            # get the filename of last zipfile
+            zip_file_name = self.last_zip_file.rsplit(sep="/", maxsplit=1)[-1]  # get the last element of url
+
+            # and create the "filepath" at "/data/*.zip"
+            self.saved_zipfile_path = Path.cwd().joinpath("data").joinpath(zip_file_name)
+
+        except Exception as ex:
+            print("Error loading {}".format(self.saved_zipfile_path))
+            print(ex)
+
+        # save the loaded file in "filepath"
+        try:
+            open(self.saved_zipfile_path, 'wb').write(r.content)
             print("Saved {} from {}".format(self.saved_zipfile_path, full_url_zip))
             dir(self.saved_zipfile_path)
-        except IOError as ioerr:
+        except Exception as ex:
             print("Error writing {}".format(self.saved_zipfile_path))
-            print(ioerr)
+            print(ex)
 
 
 class DataManager(object):
@@ -72,8 +83,6 @@ class DataManager(object):
     and imports new weather measure to SQL table."""
 
     def __init__(self):
-        from pathlib import Path
-
         self.connection = None
         self.data_stations = None
         self.data_weather = None
@@ -86,11 +95,9 @@ class DataManager(object):
         self.saved_zipfile_path = None
         self.stations = None
 
-        self.connect_database()
-        self.find_last_zipfile()
-
         try:
-            print("Found last zipfile {}".format(self.saved_zipfile_path.parts[-1]))
+            self.find_last_zipfile()
+            self.connect_database()
         except ValueError as value_error:
             print("Error using path to last zip file {}".format(self.saved_zipfile_path))
             print(value_error)
@@ -103,21 +110,21 @@ class DataManager(object):
 
         file_name = 'wetterdaten_Wetterstation.csv'  # given filename in zip
 
+        # create DataFrame
         try:
-            # ensure utf-encoding, ensure delimiter ";"
             with zipfile.ZipFile(self.saved_zipfile_path) as local_zip:
                 with local_zip.open(file_name) as csv_file:
                     self.data_stations = pd.read_csv(
                         csv_file,
-                        delimiter=";",
+                        delimiter=";",  # ensure utf-encoding, ensure delimiter ";"
                         index_col=False,
                         header=0,
                         decimal=",",
                         encoding='cp1250')  # convert typical german encoding
-
             del self.data_stations["Unnamed: 6"]  # delete last column because of trailing ";" in csv file
-        except ImportError:
+        except ImportError as ioerr:
             print("Can't import {} to DataFrame 'data_stations'.".format(file_name))
+            print(ioerr)
 
     def import_weather_measures(self):
         """Import weather measures at a given station. The corresponding data is from saved zip file."""
@@ -126,23 +133,23 @@ class DataManager(object):
 
         file_name = 'wetterdaten_Wettermessung.csv'  # given filename in zip
 
+        # create DataFrame
         try:
-            # ensure utf-encoding, ensure delimiter ";"
             with zipfile.ZipFile(self.saved_zipfile_path) as local_zip:
                 with local_zip.open(file_name) as csv_file:
                     self.data_weather = pd.read_csv(
                         csv_file,
                         parse_dates=["Datum"],
-                        delimiter=";",
+                        delimiter=";",  # ensure utf-encoding, ensure delimiter ";"
                         index_col=False,
                         header=0,
                         decimal=",",
                         encoding='cp1250')  # convert typical german encoding
-
             del self.data_weather["Unnamed: 14"]  # delete last column because of trailing ";" in csv file
             print(self.data_weather)
-        except ImportError:
-            print("Can't import {} to DataFrame 'data_stations'.".format(file_name))
+        except ImportError as ioerr:
+            print("Can't import {} to a temporal or corresonding DataFrame.".format(file_name))
+            print(ioerr)
 
     def import_locational_data(self):
         """Import locational data from a local csv file
@@ -162,11 +169,11 @@ class DataManager(object):
         #    else:
         #        return "0" + str(x)
 
+        # create DataFrame
         try:
-            # ensure utf-encoding, ensure delimiter ";"
             self.mapping_zipcode_coordinates = pd.read_csv(
                 file_name,
-                delimiter=";",
+                delimiter=";",  # ensure utf-encoding, ensure delimiter ";"
                 index_col=False,
                 header=0,
                 names=new_columns,
@@ -178,8 +185,9 @@ class DataManager(object):
                 encoding='cp1250'  # converts typical german encoding
                 # converters = {"Plz": cast_to_str}
             )
-        except ImportError:
+        except ImportError as ioerr:
             print("Can't import {} to DataFrame 'mapping_zipcode_coordinates'.".format(file_name))
+            print(ioerr)
 
     def enrich_data_stations(self):
         """Appends four columns to existing DataFrame 'data_stations'."""
@@ -244,13 +252,15 @@ class DataManager(object):
         """Connect to local SQLite database."""
         import sqlalchemy as db
 
-        sqlite_db = {'drivername': 'sqlite', 'database': 'data/weather_repo.sqlite'} # if file in subfolder, don't start string for subfolder with "/"
+        sqlite_db = {'drivername': 'sqlite',
+                     'database': 'data/weather_repo.sqlite'}    # if file is in subfolder, ...
+        # don't start string for subfolder with "/"
         db_conn = db.engine.url.URL(**sqlite_db)
 
         self.engine = db.create_engine(db_conn)  # create connection to database
         self.connection = self.engine.connect()  # connect for interaction with database
         self.metadata = db.MetaData()
-        print("Connected to Database '{}'".format(self.engine))
+        print("Connected to Database: '{}'".format(self.engine))
 
     def create_table_stations(self):
         """Create schema for table of weather data stations."""
@@ -323,33 +333,64 @@ class DataManager(object):
         print("Reset table '{}'".format(self.measures.name))
 
     def delete_old_weather_data(self):
+        """Deletes all existing data rows in temporary table that have an
+        identical combination of Station_ID and Datum in the full database table"""
         from sqlalchemy.sql import text
+
         self.engine.execute(
             text("DELETE FROM {} WHERE (Stations_ID, Datum) IN (SELECT DISTINCT Stations_ID, Datum FROM measures);"
                  .format(self.measures.name)))
 
     def insert_new_weather_data(self):
         from sqlalchemy.sql import text
+
         self.engine.execute(
             text('INSERT INTO measures SELECT * FROM temp;'))
 
-    def find_last_zipfile(self, saved_filepath=""):
-        """Finds the last zip file containings weather data that is available in subdirectory data."""
+    def find_last_zipfile(self):
+        """Finds the last zip file containing weather data that is available in subdirectory 'data'."""
         from pathlib import Path
 
-        self.path_to_data = Path.cwd().joinpath("data")
-        print("Searching for last zipfile in: {}".format(self.path_to_data))
+        self.saved_zipfile_path = Path.cwd().joinpath("data")
+        assert self.saved_zipfile_path, IsADirectoryError("Error generating path '/data/' to last zipfile")
+        print("Searching for last zipfile in: '{}'".format(self.saved_zipfile_path))
 
-        # The filename of all saved zipfiles include the date.
-        # Thus, sort those filenames and take last available zip-file-name.
-        self.saved_zipfile_path = sorted(self.path_to_data.glob('????-??-??_wetterdaten_CSV.zip'), reverse=True)[0]
+        try:
+            # The filename of all saved zipfiles includes a date part.
+            # Thus, sort those filenames and take last available zipfile.
+            self.saved_zipfile_path = sorted(self.saved_zipfile_path.glob(
+                '????-??-??_wetterdaten_CSV.zip'),
+                reverse=True)[0]
+            if not self.last_zipfile_exists():
+                raise FileNotFoundError("Can't find a file with the pattern: '????-??-??_wetterdaten_CSV.zip'")
+            else:
+                print("Using last zipfile: '{}'".format(self.saved_zipfile_path))
+        except FileNotFoundError as ex:
+            # print("Cant' load file {}".format(self.saved_zipfile_path))
+            print(ex)
+
+    def last_zipfile_exists(self):
+        """Ensure a given zipfile name is a valid file and contains
+         some information and having around 800 kB in subfolder '/data/'."""
+        from pathlib import Path
+
+        path_to_file = Path(self.saved_zipfile_path)
+        if path_to_file.is_file() and path_to_file.stat().st_size > 800000:
+            return True
+        else:
+            return False
 
 
 if __name__ == "__main__":
 
+    # TODO: show simple date comparison at end: last date of old, and last date of new data
     # TODO: separate classes into files
-    # TODO: ensure files contain some information and have around 800 kB
-    # TODO:
+    # TODO: log all outputs?!
+    # TODO: docker-version
+    # TODO: check relevant ports
+    # TODO: deploy realisation: docker, full setup or git pull?
+    # TODO: how to run? -> main-routine runs DataRequester and DataManager -> run methods-call in class__init__
+
 
     # from WeatherDataManager import (DataRequester, DataManager)
 
@@ -368,21 +409,4 @@ if __name__ == "__main__":
     dm.reset_temporal_table()
     dm.sql_from_weathermeasures()
     dm.delete_old_weather_data()
-    #dm.insert_new_weather_data()
-
-
-
-"""
-    def find_last_zipfile(self, saved_filepath=""):
-        from pathlib import Path
-
-        #if not Path(saved_filepath).exists():
-            # path = Path(path_zip_file_name)
-            # zip_file_name = path.name
-            # if not saved_filepath:
-        saved_filepath = Path(saved_filepath)
-        self.saved_zipfile_path = Path.cwd().joinpath("data")  # .joinpath(zip_file_name)
-        print(self.saved_zipfile_path)
-        self.saved_zipfile_path = sorted(saved_pathfile.glob('????-??-??_wetterdaten_CSV.zip'), reverse=True)[0]
-        print("Found last file in directory: {}".format(self.saved_zipfile_path.parts()))
-"""
+    dm.insert_new_weather_data()
