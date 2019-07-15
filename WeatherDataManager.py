@@ -338,14 +338,25 @@ class DataManager(object):
         from sqlalchemy.sql import text
 
         self.engine.execute(
-            text("DELETE FROM {} WHERE (Stations_ID, Datum) IN (SELECT DISTINCT Stations_ID, Datum FROM measures);"
-                 .format(self.measures.name)))
+            text("DELETE FROM temp WHERE (Stations_ID, Datum) "
+                 "IN (SELECT DISTINCT Stations_ID, Datum FROM measures);"
+                 ))
 
     def insert_new_weather_data(self):
         from sqlalchemy.sql import text
 
+        latest_dates = {"measure_before": self.engine.execute(text("SELECT Max(Datum) from measures;")).fetchall(),
+                        "temporal": self.engine.execute(text("SELECT Max(Datum) from temp;")).fetchall()}
+
         self.engine.execute(
             text('INSERT INTO measures SELECT * FROM temp;'))
+
+        latest_dates["measure_after"] = self.engine.execute(text("SELECT Max(Datum) from measures;")).fetchall()
+
+        print("Updated weather data measure. \n"
+              "├ Last date before update: {before}\n"
+              "└ Last date after update: {after}\n".format(before=latest_dates["measure_before"],
+                                                         after=latest_dates["measure_after"]))
 
     def find_last_zipfile(self):
         """Finds the last zip file containing weather data that is available in subdirectory 'data'."""
@@ -384,12 +395,14 @@ class DataManager(object):
 if __name__ == "__main__":
 
     # TODO: show simple date comparison at end: last date of old, and last date of new data
+    # TODO: how to run? -> main-routine runs DataRequester and DataManager -> run methods-call in class__init__
+    # TODO: hide calls to methods in class __init__-methods
     # TODO: separate classes into files
     # TODO: log all outputs?!
     # TODO: docker-version
     # TODO: check relevant ports
     # TODO: deploy realisation: docker, full setup or git pull?
-    # TODO: how to run? -> main-routine runs DataRequester and DataManager -> run methods-call in class__init__
+
 
 
     # from WeatherDataManager import (DataRequester, DataManager)
@@ -409,4 +422,4 @@ if __name__ == "__main__":
     dm.reset_temporal_table()
     dm.sql_from_weathermeasures()
     dm.delete_old_weather_data()
-    dm.insert_new_weather_data()
+    dm.insert_new_weather_data()  # show changes in last date of weather date
