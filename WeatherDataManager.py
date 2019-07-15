@@ -14,6 +14,17 @@ class DataRequester(object):
         self.saved_zipfile_path = ""
         self.url = ""
 
+    def run(self):
+        try:
+            print("\nDataRequester running..."
+                  "\n------------------------")
+            self.get_distant_filename()
+            self.save_zip_locally()
+            print("\nDataRequester closed."
+                  "\n---------------------\n")
+        except Exception as ex:
+            print(ex)
+
     def get_distant_filename(self):
         """Scrap HTML page to extract newest link."""
         from bs4 import BeautifulSoup
@@ -102,6 +113,26 @@ class DataManager(object):
             print("Error using path to last zip file {}".format(self.saved_zipfile_path))
             print(value_error)
 
+    def run(self):
+        try:
+            print("\nDataManager running..."
+                  "\n----------------------")
+            self.import_weather_stations()
+            self.import_weather_measures()
+            self.import_locational_data()
+
+            self.enrich_data_stations()
+            self.get_nearest_zipcode()
+
+            self.reset_temporal_table()
+            self.sql_from_weathermeasures()
+            self.delete_old_weather_data()
+            self.insert_new_weather_data()  # show changes in last date of weather date
+            print("\nDataManager closed."
+                  "\n-------------------\n")
+        except Exception as ex:
+            print(ex)
+
     def import_weather_stations(self):
         """Import weather stations and corresponding data
         from current locally saved zip file."""
@@ -146,7 +177,6 @@ class DataManager(object):
                         decimal=",",
                         encoding='cp1250')  # convert typical german encoding
             del self.data_weather["Unnamed: 14"]  # delete last column because of trailing ";" in csv file
-            print(self.data_weather)
         except ImportError as ioerr:
             print("Can't import {} to a temporal or corresonding DataFrame.".format(file_name))
             print(ioerr)
@@ -235,8 +265,6 @@ class DataManager(object):
 
         self.data_stations[["Plz_matched", "Ort_matched", "Longitude_matched", "Latitude_matched"]] \
             = self.data_stations.apply(self.find_nearest_zipcode, axis=1)
-
-        print(self.data_stations)
 
     def sql_from_weatherstations(self):
         print("Connected to Database '{}':".format(self.engine))
@@ -394,8 +422,6 @@ class DataManager(object):
 
 if __name__ == "__main__":
 
-    # TODO: show simple date comparison at end: last date of old, and last date of new data
-    # TODO: how to run? -> main-routine runs DataRequester and DataManager -> run methods-call in class__init__
     # TODO: hide calls to methods in class __init__-methods
     # TODO: separate classes into files
     # TODO: log all outputs?!
@@ -403,23 +429,10 @@ if __name__ == "__main__":
     # TODO: check relevant ports
     # TODO: deploy realisation: docker, full setup or git pull?
 
-
-
     # from WeatherDataManager import (DataRequester, DataManager)
 
-    dr = DataRequester
-    dr.get_distant_filename(dr)
-    dr.save_zip_locally(dr)
+    dr = DataRequester()
+    dr.run()
 
     dm = DataManager()
-    dm.import_weather_stations()
-    dm.import_weather_measures()
-    dm.import_locational_data()
-
-    dm.enrich_data_stations()
-    dm.get_nearest_zipcode()
-
-    dm.reset_temporal_table()
-    dm.sql_from_weathermeasures()
-    dm.delete_old_weather_data()
-    dm.insert_new_weather_data()  # show changes in last date of weather date
+    dm.run()
