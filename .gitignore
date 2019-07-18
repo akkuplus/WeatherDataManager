@@ -1,5 +1,5 @@
 env/
-data/_examples/
+resources/_examples/
 external/
 
 .idea/
