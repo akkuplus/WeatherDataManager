@@ -5,128 +5,6 @@ zip code next to each weather data station. The WDM enriches weather data with i
 from weather data station, and appends the newest data to an existing SQL table.
 """
 
-
-class DataRequester(object):
-    """Requests and saves distant weather data into a local zip file."""
-
-    def __init__(self):
-        import pathlib
-        import configparser
-
-        self.config = configparser.ConfigParser()
-        self.config.read(pathlib.Path.cwd().joinpath("config").joinpath("config.ini"))
-
-        self.logger = None
-        self.get_logger()
-
-        self.last_zip_file = ""
-        self.saved_zipfile_path = ""
-        self.url = ""
-
-    def get_logger(self):
-        import logging.handlers
-
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.DEBUG)
-
-        # TODO: save handlers and options in config-file
-
-        # create console handler with a higher log level
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.INFO)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - function:%(funcName)s - %(message)s')
-        ch.setFormatter(formatter)
-        self.logger.addHandler(ch)
-
-        # create file handler which logs on level warnings and above
-        fh = logging.FileHandler('config/error_log.txt')
-        fh.setLevel(logging.INFO)  # WARNING!
-        fh.setFormatter(formatter)
-        self.logger.addHandler(fh)
-
-        if self.config.getboolean("error", "send_email"):
-            # create email handler which notifies on level errors and above
-            eh = logging.handlers.SMTPHandler(
-                "mailhost",
-                "fromaddr",
-                self.config.get("error", "recipients"),
-                "subject",
-                credentials=None)
-            eh.setLevel(logging.INFO)
-            eh.setFormatter(formatter)
-            self.logger.addHandler(eh)
-
-    def run(self):
-        try:
-            self.logger.info(f"DataRequester running")
-            self.get_distant_filename()
-            self.save_zip_locally()
-            self.logger.info(f"DataRequester closed")
-        except Exception as ex:
-            self.logger.exception(f"Error while running DataRequester")
-
-    def get_distant_filename(self):
-        """Scrap HTML page to extract newest link."""
-        import bs4
-        import requests
-        import urllib.parse
-
-        # extract current link in html file
-        self.url = "https://dbup2date.uni-bayreuth.de/blocklysql/"  # static link
-        html_file = "wetterdaten.html"  # static filename
-        html_path = urllib.parse.urljoin(self.url, html_file)
-        self.logger.info(f"Using {html_path}")
-
-        zip_file_url = None
-        try:
-            resp = requests.get(html_path, verify=False)
-            soup = bs4.BeautifulSoup(resp.content, features="html.parser")
-            for link in soup.find_all('a', href=True):
-                if "CSV" in link['href']:
-                    zip_file_url = link['href']  # example: "downloads\wetterdaten\2019-07-07_wetterdaten_CSV.zip"
-                    break
-
-            # get distant zip file path
-            if zip_file_url:
-                self.last_zip_file = zip_file_url
-                self.logger.info(f"Using {self.last_zip_file}")
-            else:
-                raise FileNotFoundError(f"Found no zipfile '*wetterdaten_CSV.zip' in HTML at {html_path}")
-        except FileNotFoundError:
-            self.logger.exception()
-
-    def save_zip_locally(self):
-        """Load last weather data saved in zip."""
-        # example: url = 'https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-06-21_wetterdaten.zip'
-        import requests
-        import urllib.parse
-        import pathlib
-
-        # load last distant zip file from web
-        response = None
-        full_url_zip = None
-        saved_zipfile_path = None
-        try:
-            full_url_zip = urllib.parse.urljoin(self.url, self.last_zip_file)
-            response = requests.get(full_url_zip, allow_redirects=True, verify=False)
-
-            # get the filename of last zipfile
-            zip_file_name = self.last_zip_file.rsplit(sep="/", maxsplit=1)[-1]  # get the last element of url
-
-            # and create the "filepath" for a zip "/resources/*.zip"
-            saved_zipfile_path = pathlib.Path.cwd().joinpath("resources").joinpath(zip_file_name)
-            self.logger.info(f"Loaded distant zipfile")
-        except Exception:
-            self.logger.exception(f"Error loading distant {saved_zipfile_path}")
-
-        # save the loaded file in "filepath"
-        try:
-            open(saved_zipfile_path, 'wb').write(response.content)
-            self.logger.info(f"Saved {saved_zipfile_path} from {full_url_zip}")
-        except Exception:
-            self.logger.exception(f"Error writing {self.saved_zipfile_path}")
-
-
 class DataManager(object):
     """DataManager imports data of weather stations and weather measures,
     finds the nearest zip code for a given data station,
@@ -209,7 +87,8 @@ class DataManager(object):
             self.sql_from_weathermeasures()
             self.delete_old_weather_data()
             self.insert_new_weather_data()  # show changes in last date of weather date
-            self.logger.info(f"DataManager closed")
+            print("\nDataManager closed."
+                  "\n-------------------\n")
         except Exception:
             self.logger.exception(f"Error while running DataManager")
 
@@ -249,6 +128,7 @@ class DataManager(object):
                 return False
         except Exception:
             self.logger.exception()
+
 
     def connect_database(self):
         """Connect to database."""
@@ -319,6 +199,8 @@ class DataManager(object):
 
         self.measures.create(self.engine, checkfirst=True)  # Creates the table
         self.logger.info(f"Created a new measures table '{table_name}'")
+
+
 
     def import_weather_stations(self):
         """Import weather stations and corresponding data
@@ -500,7 +382,6 @@ class DataManager(object):
         from sqlalchemy.sql import text
 
         try:
-
             self.engine.execute(
                 text("DELETE FROM temp WHERE (Stations_ID, Datum) "
                      "IN (SELECT DISTINCT Stations_ID, Datum FROM measures);"
@@ -524,25 +405,3 @@ class DataManager(object):
 
             self.logger.info(f"Updated weather data: to last date {latest_dates['measure_after']} " \
                              f"from last date {latest_dates['measure_before']}")
-
-            # print("Updated weather data measure. \n"
-            # "├ Last date before update: {before}\n"
-            # "└ Last date after update: {after}\n".format(before=latest_dates["measure_before"],
-            #        after=latest_dates["measure_after"]))
-        except Exception:
-            self.logger.exception("Error updating/integrating new weather_data into permanant database table {}")
-
-
-if __name__ == "__main__":
-
-    # TODO: log all outputs -> redirect output and errors to to stdout und stderr
-    # TODO: check relevant ports
-    # TODO: deploy realisation: docker, full setup or git pull?
-
-    # from WeatherDataManager import (DataRequester, DataManager, Administrator)
-
-    dr = DataRequester()
-    dr.run()
-
-    dm = DataManager()
-    dm.run()
