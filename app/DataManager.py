@@ -5,6 +5,8 @@ zip code next to each weather data station. The WDM enriches weather data with i
 from weather data station, and appends the newest data to an existing SQL table.
 """
 
+
+
 class DataManager(object):
     """DataManager imports data of weather stations and weather measures,
     finds the nearest zip code for a given data station,
