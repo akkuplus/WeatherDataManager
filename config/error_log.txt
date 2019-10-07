@@ -1,56 +1,66 @@
-2019-07-18 14:54:21,354 - WeatherDataManager - INFO - MainProcess - function:run - DataRequester running
-2019-07-18 14:54:21,355 - WeatherDataManager - INFO - MainProcess - function:find_last_zipfile - Using last zipfile: '/home/marcus/PycharmProjects/WeatherDataManager/resources/2019-07-12_wetterdaten_CSV.zip'
-2019-07-18 14:54:21,551 - WeatherDataManager - INFO - MainProcess - function:connect_database - Setup and connected to database: 'Engine(sqlite:///resources/weather_repo.sqlite)'
-2019-07-18 14:54:22,119 - WeatherDataManager - INFO - MainProcess - function:run - DataRequester closed
-2019-07-18 15:01:22,625 - WeatherDataManager - INFO - MainProcess - function:run - DataRequester running
-2019-07-18 15:01:22,626 - WeatherDataManager - INFO - MainProcess - function:find_last_zipfile - Using last zipfile: '/home/marcus/PycharmProjects/WeatherDataManager/resources/2019-07-12_wetterdaten_CSV.zip'
-2019-07-18 15:01:22,768 - WeatherDataManager - INFO - MainProcess - function:connect_database - Setup and connected to database: 'Engine(sqlite:///resources/weather_repo.sqlite)'
-2019-07-18 15:01:23,116 - WeatherDataManager - INFO - MainProcess - function:import_weather_stations - Imported into DataFrame
-2019-07-18 15:01:23,249 - WeatherDataManager - INFO - MainProcess - function:import_weather_measures - Imported into DataFrame
-2019-07-18 15:01:23,277 - WeatherDataManager - INFO - MainProcess - function:import_locational_data - Imported into DataFrame
-2019-07-18 15:01:23,330 - WeatherDataManager - INFO - MainProcess - function:get_nearest_zipcode - Mapped a data_station to a zipcode
-2019-07-18 15:01:23,330 - WeatherDataManager - INFO - MainProcess - function:run - DataRequester closed
-2019-07-18 15:05:14,764 - WeatherDataManager - INFO - MainProcess - function:run - DataRequester running
-2019-07-18 15:05:14,765 - WeatherDataManager - INFO - MainProcess - function:find_last_zipfile - Using last zipfile: '/home/marcus/PycharmProjects/WeatherDataManager/resources/2019-07-12_wetterdaten_CSV.zip'
-2019-07-18 15:05:14,916 - WeatherDataManager - INFO - MainProcess - function:connect_database - Setup and connected to database: 'Engine(sqlite:///resources/weather_repo.sqlite)'
-2019-07-18 15:05:15,337 - WeatherDataManager - INFO - MainProcess - function:import_weather_stations - Imported into DataFrame
-2019-07-18 15:05:15,470 - WeatherDataManager - INFO - MainProcess - function:import_weather_measures - Imported into DataFrame
-2019-07-18 15:05:15,498 - WeatherDataManager - INFO - MainProcess - function:import_locational_data - Imported into DataFrame
-2019-07-18 15:05:15,552 - WeatherDataManager - INFO - MainProcess - function:get_nearest_zipcode - Mapped a data_station to a zipcode
-2019-07-18 15:05:15,622 - WeatherDataManager - INFO - MainProcess - function:create_table_measures - Created a new measures table 'temp'
-2019-07-18 15:05:15,630 - WeatherDataManager - INFO - MainProcess - function:reset_temporal_table - Reset table 'temp'
-2019-07-18 15:05:17,258 - WeatherDataManager - INFO - MainProcess - function:sql_from_weathermeasures - Transferred DataFrame to Table 'temp' in Database 'Engine(sqlite:///resources/weather_repo.sqlite)'
-2019-07-18 15:05:17,600 - WeatherDataManager - ERROR - MainProcess - function:insert_new_weather_data - Error updating/integrating new weather_data into permanant database table {}
-Traceback (most recent call last):
-  File "/home/marcus/PycharmProjects/WeatherDataManager/WeatherDataManager.py", line 525, in insert_new_weather_data
-    self.logger.info(f"Updated weather data: to last date {latest_dates['after']} "
-KeyError: 'after'
-2019-07-18 15:05:17,601 - WeatherDataManager - INFO - MainProcess - function:run - DataRequester closed
-2019-07-18 15:07:24,184 - WeatherDataManager - INFO - MainProcess - function:run - DataRequester running
-2019-07-18 15:07:24,185 - WeatherDataManager - INFO - MainProcess - function:find_last_zipfile - Using last zipfile: '/home/marcus/PycharmProjects/WeatherDataManager/resources/2019-07-12_wetterdaten_CSV.zip'
-2019-07-18 15:07:24,456 - WeatherDataManager - INFO - MainProcess - function:connect_database - Setup and connected to database: 'Engine(sqlite:///resources/weather_repo.sqlite)'
-2019-07-18 15:07:25,135 - WeatherDataManager - INFO - MainProcess - function:import_weather_stations - Imported into DataFrame
-2019-07-18 15:07:25,277 - WeatherDataManager - INFO - MainProcess - function:import_weather_measures - Imported into DataFrame
-2019-07-18 15:07:25,305 - WeatherDataManager - INFO - MainProcess - function:import_locational_data - Imported into DataFrame
-2019-07-18 15:07:25,364 - WeatherDataManager - INFO - MainProcess - function:get_nearest_zipcode - Mapped a data_station to a zipcode
-2019-07-18 15:07:25,413 - WeatherDataManager - INFO - MainProcess - function:create_table_measures - Created a new measures table 'temp'
-2019-07-18 15:07:25,423 - WeatherDataManager - INFO - MainProcess - function:reset_temporal_table - Reset table 'temp'
-2019-07-18 15:07:26,975 - WeatherDataManager - INFO - MainProcess - function:sql_from_weathermeasures - Transferred DataFrame to Table 'temp' in Database 'Engine(sqlite:///resources/weather_repo.sqlite)'
-2019-07-18 15:07:27,207 - WeatherDataManager - ERROR - MainProcess - function:insert_new_weather_data - Error updating/integrating new weather_data into permanant database table {}
-Traceback (most recent call last):
-  File "/home/marcus/PycharmProjects/WeatherDataManager/WeatherDataManager.py", line 525, in insert_new_weather_data
-    self.logger.info(f"Updated weather data: to last date {latest_dates['after']} " \
-KeyError: 'after'
-2019-07-18 15:07:27,208 - WeatherDataManager - INFO - MainProcess - function:run - DataRequester closed
-2019-07-18 15:11:00,668 - WeatherDataManager - INFO - MainProcess - function:run - DataManager running
-2019-07-18 15:11:00,669 - WeatherDataManager - INFO - MainProcess - function:find_last_zipfile - Using last zipfile: '/home/marcus/PycharmProjects/WeatherDataManager/resources/2019-07-12_wetterdaten_CSV.zip'
-2019-07-18 15:11:00,819 - WeatherDataManager - INFO - MainProcess - function:connect_database - Setup and connected to database: 'Engine(sqlite:///resources/weather_repo.sqlite)'
-2019-07-18 15:11:01,199 - WeatherDataManager - INFO - MainProcess - function:import_weather_stations - Imported into DataFrame
-2019-07-18 15:11:01,334 - WeatherDataManager - INFO - MainProcess - function:import_weather_measures - Imported into DataFrame
-2019-07-18 15:11:01,362 - WeatherDataManager - INFO - MainProcess - function:import_locational_data - Imported into DataFrame
-2019-07-18 15:11:01,416 - WeatherDataManager - INFO - MainProcess - function:get_nearest_zipcode - Mapped a data_station to a zipcode
-2019-07-18 15:11:01,470 - WeatherDataManager - INFO - MainProcess - function:create_table_measures - Created a new measures table 'temp'
-2019-07-18 15:11:01,478 - WeatherDataManager - INFO - MainProcess - function:reset_temporal_table - Reset table 'temp'
-2019-07-18 15:11:02,991 - WeatherDataManager - INFO - MainProcess - function:sql_from_weathermeasures - Transferred DataFrame to Table 'temp' in Database 'Engine(sqlite:///resources/weather_repo.sqlite)'
-2019-07-18 15:11:03,222 - WeatherDataManager - INFO - MainProcess - function:insert_new_weather_data - Updated weather data: to last date [('2019-07-10 00:00:00.000000',)] from last date [('2019-07-10 00:00:00.000000',)]
-2019-07-18 15:11:03,222 - WeatherDataManager - INFO - MainProcess - function:run - DataManager closed
+2019-10-07 22:50:38,905 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-07 22:50:40,422 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-07 22:50:40,456 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-07 22:50:41,095 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-07 22:50:41,100 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-07_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-07_wetterdaten_CSV.zip
+2019-10-07 22:50:41,101 - app.DataRequester - INFO - function:run - DataRequester closed!
+INFO function run: DataRequester running...
+DEBUG function get_distant_filename: Found website and parsed html-file
+DEBUG function get_distant_filename: Found a zipfile in HTML-code
+DEBUG function save_zip_locally: Created filepath for new zipfile
+INFO function save_zip_locally: Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-07_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-07_wetterdaten_CSV.zip
+INFO function run: DataRequester closed!
+2019-10-07 22:59:38,409 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-07 22:59:39,747 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-07 22:59:39,767 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-07 22:59:40,424 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-07 22:59:40,429 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-07_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-07_wetterdaten_CSV.zip
+2019-10-07 22:59:40,430 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-07 23:00:32,428 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-07 23:00:32,428 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-07 23:00:32,850 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-07 23:00:32,850 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-07 23:00:32,867 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-07 23:00:32,867 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-07 23:00:33,427 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-07 23:00:33,427 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-07 23:00:33,432 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-07_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-07_wetterdaten_CSV.zip
+2019-10-07 23:00:33,432 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-07_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-07_wetterdaten_CSV.zip
+2019-10-07 23:00:33,434 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-07 23:00:33,434 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-07 23:00:47,334 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-07 23:00:47,334 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-07 23:00:47,334 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-07 23:00:47,827 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-07 23:00:47,827 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-07 23:00:47,827 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-07 23:00:47,845 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-07 23:00:47,845 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-07 23:00:47,845 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-07 23:00:48,689 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-07 23:00:48,689 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-07 23:00:48,689 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-07 23:00:48,694 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-07_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-07_wetterdaten_CSV.zip
+2019-10-07 23:00:48,694 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-07_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-07_wetterdaten_CSV.zip
+2019-10-07 23:00:48,694 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-07_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-07_wetterdaten_CSV.zip
+2019-10-07 23:00:48,696 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-07 23:00:48,696 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-07 23:00:48,696 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-07 23:03:18,578 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-07 23:03:20,123 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-07 23:03:20,143 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-07 23:03:20,714 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-07 23:03:20,720 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-07_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-07_wetterdaten_CSV.zip
+2019-10-07 23:03:20,726 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-07 23:04:28,267 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-07 23:04:28,267 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-07 23:04:29,858 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-07 23:04:29,858 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-07 23:04:29,876 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-07 23:04:29,876 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-07 23:04:30,441 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-07 23:04:30,441 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-07 23:04:30,446 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-07_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-07_wetterdaten_CSV.zip
+2019-10-07 23:04:30,446 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-07_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-07_wetterdaten_CSV.zip
+2019-10-07 23:04:30,449 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-07 23:04:30,449 - app.DataRequester - INFO - function:run - DataRequester closed!
