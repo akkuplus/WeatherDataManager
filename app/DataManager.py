@@ -33,46 +33,11 @@ class DataManager(object):
         # TODO: request name-parameters from configuration_file
         self.stations = None
         self.measures = None
-
-    def get_logger(self):
-        import logging.handlers
-
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.DEBUG)
-
-        # TODO: save handlers and options in config-file
-
-        # create console handler with a higher log level
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.INFO)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - '
-            '%(levelname)s - %(processName)s - '
-            'function:%(funcName)s - %(message)s')
-        ch.setFormatter(formatter)
-        self.logger.addHandler(ch)
-
-        # create file handler which logs on level warnings and above
-        fh = logging.FileHandler('config/error_log.txt')
-        fh.setLevel(logging.INFO)  # WARNING!
-        fh.setFormatter(formatter)
-        self.logger.addHandler(fh)
-
-        if self.config.getboolean("error", "send_email"):
-            # create email handler which notifies on level errors and above
-            eh = logging.handlers.SMTPHandler(
-                "mailhost",
-                "fromaddr",
-                self.config.get("error", "recipients"),
-                "subject",
-                credentials=None)
-            eh.setLevel(logging.INFO)
-            eh.setFormatter(formatter)
-            self.logger.addHandler(eh)
+        self.run()
 
     def run(self):
         try:
-            self.logger.info(f"DataManager running")
+            self.logger.info(f"DataManager running...")
             self.find_last_zipfile()
             self.connect_database()
 
@@ -87,10 +52,49 @@ class DataManager(object):
             self.sql_from_weathermeasures()
             self.delete_old_weather_data()
             self.insert_new_weather_data()  # show changes in last date of weather date
-            print("\nDataManager closed."
-                  "\n-------------------\n")
+            self.logger.info("DataManager closed.")
         except Exception:
             self.logger.exception(f"Error while running DataManager")
+
+    def get_logger(self):
+        import logging
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+
+        # TODO: save handlers and options in config-file
+
+        # create console handler with a higher log level
+        consolhandler = logging.StreamHandler()
+        consolhandler.setLevel(logging.INFO)
+        consol_formatter = logging.Formatter(
+            '%(levelname)s function %(funcName)s: %(message)s'
+            )
+        consolhandler.setFormatter(consol_formatter)
+        self.logger.addHandler(consolhandler)
+
+        # create file handler which logs on level warnings and above
+        filehandler = logging.FileHandler('config/error_log.txt')
+        filehandler.setLevel(logging.DEBUG)
+        file_formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - function:%(funcName)s - %(message)s')
+        filehandler.setFormatter(file_formatter)
+        self.logger.addHandler(filehandler)
+
+        # TODO: implement email logging handler
+        if self.config.getboolean("error", "send_email"):
+            self.logger.info(f"Using E-Mail Logging handler")
+            # create email handler which notifies on level errors and above
+
+            #emailhandler = logging.handlers.SMTPHandler(
+            #    "mailhost",
+            #    "fromaddr",
+            #    self.config.get("error", "recipients"),
+            #    "subject",
+            #    credentials=None)
+            #emailhandler.setLevel(logging.ERROR)
+            #emailhandler.setFormatter(formatter)
+            #self.logger.addHandler(emailhandler)
 
     def find_last_zipfile(self):
         """Finds the last zip file containing weather resources that is available in subdirectory 'resources'."""
@@ -405,3 +409,10 @@ class DataManager(object):
 
             self.logger.info(f"Updated weather data: to last date {latest_dates['measure_after']} " \
                              f"from last date {latest_dates['measure_before']}")
+
+            # print("Updated weather data measure. \n"
+            # "├ Last date before update: {before}\n"
+            # "└ Last date after update: {after}\n".format(before=latest_dates["measure_before"],
+            #        after=latest_dates["measure_after"]))
+        except Exception:
+            self.logger.exception("Error updating/integrating new weather_data into permanent database table {}")
