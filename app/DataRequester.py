@@ -24,7 +24,9 @@ class DataRequester(object):
             self.logger.exception(f"Error while running DataRequester")
 
     def get_logger(self):
+
         import logging
+        import logging.handlers
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
@@ -52,6 +54,20 @@ class DataRequester(object):
         if self.config.getboolean("error", "send_email"):
             self.logger.info(f"Using E-Mail Logging handler")
             # create email handler which notifies on level errors and above
+
+            error_handler = logging.handlers.SMTPHandler(
+                mailhost=("localhost", 25),
+                fromaddr="me@me.de",
+                toaddrs=[self.config.get("error", "recipients")],
+                subject="Error WeatherDataManager",
+            )
+            error_handler.setLevel(logging.WARNING)
+            formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - function:%(funcName)s - %(message)s')
+            # error_handler.setFormatter(logging.Formatter(formatter))
+            error_handler.setFormatter(formatter)
+            self.logger.addHandler(error_handler)
+            self.logger.error("TEST")
 
             #emailhandler = logging.handlers.SMTPHandler(
             #    "mailhost",

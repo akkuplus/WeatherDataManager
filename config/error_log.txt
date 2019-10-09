@@ -64,3 +64,153 @@ INFO function run: DataRequester closed!
 2019-10-07 23:04:30,446 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-07_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-07_wetterdaten_CSV.zip
 2019-10-07 23:04:30,449 - app.DataRequester - INFO - function:run - DataRequester closed!
 2019-10-07 23:04:30,449 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-08 21:30:04,216 - app.DataManager - DEBUG - function:find_last_zipfile - Searching for last zipfile in: 'F:\Python\_Working\Wetter-Gustini\resources'
+2019-10-08 21:30:04,216 - app.DataManager - DEBUG - function:find_last_zipfile - Searching for last zipfile in: 'F:\Python\_Working\Wetter-Gustini\resources'
+2019-10-08 21:30:04,222 - app.DataManager - INFO - function:find_last_zipfile - Using last zipfile: 'F:\Python\_Working\Wetter-Gustini\resources\2019-10-07_wetterdaten_CSV.zip'
+2019-10-08 21:30:04,222 - app.DataManager - INFO - function:find_last_zipfile - Using last zipfile: 'F:\Python\_Working\Wetter-Gustini\resources\2019-10-07_wetterdaten_CSV.zip'
+2019-10-08 21:31:06,578 - app.DataManager - DEBUG - function:find_last_zipfile - Searching for last zipfile in: 'F:\Python\_Working\Wetter-Gustini\resources'
+2019-10-08 21:31:06,585 - app.DataManager - INFO - function:find_last_zipfile - Using last zipfile: 'F:\Python\_Working\Wetter-Gustini\resources\2019-10-07_wetterdaten_CSV.zip'
+2019-10-08 21:31:21,371 - app.DataManager - INFO - function:connect_database - Connected to database: Engine(sqlite:///resources/weather_repo.sqlite)
+2019-10-08 21:31:59,138 - app.DataManager - INFO - function:import_weather_stations - Imported into DataFrame
+2019-10-08 21:32:34,209 - app.DataManager - INFO - function:import_weather_measures - Imported into DataFrame
+2019-10-08 21:32:38,187 - app.DataManager - INFO - function:import_locational_data - Imported into DataFrame
+2019-10-08 21:32:42,567 - app.DataManager - DEBUG - function:enrich_data_stations - Appended columns to DataFrame 'data_stations'
+2019-10-08 21:32:45,838 - app.DataManager - INFO - function:get_nearest_zipcode - Mapped data_stations to zipcodes
+2019-10-08 21:33:00,169 - app.DataManager - INFO - function:create_table_measures - Created a new measures table 'temp'
+2019-10-08 21:33:00,269 - app.DataManager - INFO - function:reset_temporal_table - Reset table 'temp'
+2019-10-08 21:33:20,332 - app.DataManager - INFO - function:sql_from_weathermeasures - Transferred DataFrame to Table 'temp' in Database 'Engine(sqlite:///resources/weather_repo.sqlite)'
+2019-10-08 21:59:37,087 - app.DataManager - INFO - function:run - DataManager running...
+2019-10-08 21:59:37,090 - app.DataManager - DEBUG - function:find_last_zipfile - Searching for last zipfile in: F:\Python\_Working\Wetter-Gustini\data
+2019-10-08 21:59:37,094 - app.DataManager - INFO - function:find_last_zipfile - Using last zipfile: 'F:\Python\_Working\Wetter-Gustini\data\2019-10-08_wetterdaten_CSV.zip'
+2019-10-08 21:59:37,860 - app.DataManager - INFO - function:connect_database - Connected to database: Engine(sqlite:///data/weather_repo.sqlite)
+2019-10-08 21:59:40,499 - app.DataManager - INFO - function:import_weather_stations - Imported into DataFrame
+2019-10-08 21:59:41,100 - app.DataManager - INFO - function:import_weather_measures - Imported into DataFrame
+2019-10-08 21:59:41,226 - app.DataManager - INFO - function:import_locational_data - Imported into DataFrame
+2019-10-08 21:59:41,247 - app.DataManager - DEBUG - function:enrich_data_stations - Appended columns to DataFrame 'data_stations'
+2019-10-08 21:59:41,412 - app.DataManager - INFO - function:get_nearest_zipcode - Mapped data_stations to zipcodes
+2019-10-08 21:59:41,633 - app.DataManager - INFO - function:create_table_measures - Created a new measures table 'temp'
+2019-10-08 21:59:41,701 - app.DataManager - INFO - function:reset_temporal_table - Reset table 'temp'
+2019-10-08 21:59:46,819 - app.DataManager - INFO - function:sql_from_weathermeasures - Transferred DataFrame to Table 'temp' in Database 'Engine(sqlite:///data/weather_repo.sqlite)'
+2019-10-08 21:59:47,523 - app.DataManager - DEBUG - function:delete_old_weather_data - Cleared duplicate data from temporary table
+2019-10-08 21:59:47,794 - app.DataManager - INFO - function:insert_new_weather_data - Updated weather data: to last date [('2019-10-06 00:00:00.000000',)] from last date [('2019-07-08 00:00:00.000000',)]
+2019-10-08 21:59:47,795 - app.DataManager - INFO - function:run - DataManager closed.
+2019-10-09 07:16:34,773 - app.DataRequester - INFO - function:get_logger - Using E-Mail Logging handler
+2019-10-09 07:16:34,773 - app.DataRequester - ERROR - function:get_logger - TEST
+2019-10-09 07:16:36,882 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-09 07:16:39,066 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-09 07:16:39,089 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-09 07:16:39,894 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-09 07:16:39,909 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-09_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-09_wetterdaten_CSV.zip
+2019-10-09 07:16:39,909 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-09 07:16:39,916 - app.DataManager - INFO - function:get_logger - Using E-Mail Logging handler
+2019-10-09 07:16:39,916 - app.DataManager - ERROR - function:get_logger - TEST
+2019-10-09 07:16:41,938 - app.DataManager - INFO - function:run - DataManager running...
+2019-10-09 07:16:41,938 - app.DataManager - DEBUG - function:find_last_zipfile - Searching for last zipfile in: F:\Python\_Working\Wetter-Gustini\data
+2019-10-09 07:16:41,954 - app.DataManager - INFO - function:find_last_zipfile - Using last zipfile: 'F:\Python\_Working\Wetter-Gustini\data\2019-10-09_wetterdaten_CSV.zip'
+2019-10-09 07:16:42,937 - app.DataManager - INFO - function:connect_database - Connected to database: Engine(sqlite:///data/weather_repo.sqlite)
+2019-10-09 07:16:47,338 - app.DataManager - INFO - function:import_weather_stations - Imported into DataFrame
+2019-10-09 07:16:47,994 - app.DataManager - INFO - function:import_weather_measures - Imported into DataFrame
+2019-10-09 07:16:48,125 - app.DataManager - INFO - function:import_locational_data - Imported into DataFrame
+2019-10-09 07:16:48,144 - app.DataManager - DEBUG - function:enrich_data_stations - Appended columns to DataFrame 'data_stations'
+2019-10-09 07:16:48,287 - app.DataManager - INFO - function:get_nearest_zipcode - Mapped data_stations to zipcodes
+2019-10-09 07:16:48,595 - app.DataManager - INFO - function:create_table_measures - Created a new measures table 'temp'
+2019-10-09 07:16:48,617 - app.DataManager - INFO - function:reset_temporal_table - Reset table 'temp'
+2019-10-09 07:16:53,155 - app.DataManager - INFO - function:sql_from_weathermeasures - Transferred DataFrame to Table 'temp' in Database 'Engine(sqlite:///data/weather_repo.sqlite)'
+2019-10-09 07:16:53,155 - app.DataManager - ERROR - function:delete_old_weather_data - Error clearing duplicate data from temporary table
+Traceback (most recent call last):
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1244, in _execute_context
+    cursor, statement, parameters, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\default.py", line 550, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: no such table: measures
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "F:\Python\_Working\Wetter-Gustini\app\DataManager.py", line 403, in delete_old_weather_data
+    text("DELETE FROM temp WHERE (Stations_ID, Datum) "
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 2166, in execute
+    return connection.execute(statement, *multiparams, **params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 988, in execute
+    return meth(self, multiparams, params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\sql\elements.py", line 287, in _execute_on_connection
+    return connection._execute_clauseelement(self, multiparams, params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1107, in _execute_clauseelement
+    distilled_params,
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1248, in _execute_context
+    e, statement, parameters, cursor, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1466, in _handle_dbapi_exception
+    util.raise_from_cause(sqlalchemy_exception, exc_info)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\util\compat.py", line 399, in raise_from_cause
+    reraise(type(exception), exception, tb=exc_tb, cause=cause)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\util\compat.py", line 153, in reraise
+    raise value.with_traceback(tb)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1244, in _execute_context
+    cursor, statement, parameters, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\default.py", line 550, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: measures
+[SQL: DELETE FROM temp WHERE (Stations_ID, Datum) IN (SELECT DISTINCT Stations_ID, Datum FROM measures);]
+(Background on this error at: http://sqlalche.me/e/e3q8)
+2019-10-09 07:16:55,192 - app.DataManager - ERROR - function:insert_new_weather_data - Error updating/integrating new weather_data into permanent database table {}
+Traceback (most recent call last):
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1244, in _execute_context
+    cursor, statement, parameters, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\default.py", line 550, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: no such table: measures
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "F:\Python\_Working\Wetter-Gustini\app\DataManager.py", line 415, in insert_new_weather_data
+    latest_dates = {"measure_before": self.engine.execute(text("SELECT Max(Datum) from measures;")).fetchall(),
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 2166, in execute
+    return connection.execute(statement, *multiparams, **params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 988, in execute
+    return meth(self, multiparams, params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\sql\elements.py", line 287, in _execute_on_connection
+    return connection._execute_clauseelement(self, multiparams, params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1107, in _execute_clauseelement
+    distilled_params,
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1248, in _execute_context
+    e, statement, parameters, cursor, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1466, in _handle_dbapi_exception
+    util.raise_from_cause(sqlalchemy_exception, exc_info)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\util\compat.py", line 399, in raise_from_cause
+    reraise(type(exception), exception, tb=exc_tb, cause=cause)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\util\compat.py", line 153, in reraise
+    raise value.with_traceback(tb)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1244, in _execute_context
+    cursor, statement, parameters, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\default.py", line 550, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: measures
+[SQL: SELECT Max(Datum) from measures;]
+(Background on this error at: http://sqlalche.me/e/e3q8)
+2019-10-09 07:16:57,241 - app.DataManager - INFO - function:run - DataManager closed.
+2019-10-09 07:21:49,706 - app.DataRequester - INFO - function:get_logger - Using E-Mail Logging handler
+2019-10-09 07:21:49,707 - app.DataRequester - ERROR - function:get_logger - TEST
+2019-10-09 07:21:51,758 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-09 07:21:53,241 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-09 07:21:53,251 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-09 07:21:53,999 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-09 07:21:53,999 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-09_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-09_wetterdaten_CSV.zip
+2019-10-09 07:21:53,999 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-09 07:21:53,999 - app.DataManager - INFO - function:get_logger - Using E-Mail Logging handler
+2019-10-09 07:21:53,999 - app.DataManager - ERROR - function:get_logger - TEST
+2019-10-09 07:21:56,052 - app.DataManager - INFO - function:run - DataManager running...
+2019-10-09 07:21:56,052 - app.DataManager - DEBUG - function:find_last_zipfile - Searching for last zipfile in: F:\Python\_Working\Wetter-Gustini\data
+2019-10-09 07:21:56,052 - app.DataManager - INFO - function:find_last_zipfile - Using last zipfile: 'F:\Python\_Working\Wetter-Gustini\data\2019-10-09_wetterdaten_CSV.zip'
+2019-10-09 07:21:56,569 - app.DataManager - INFO - function:connect_database - Connected to database: Engine(sqlite:///data/weather_repo.sqlite)
+2019-10-09 07:21:59,372 - app.DataManager - INFO - function:import_weather_stations - Imported into DataFrame
+2019-10-09 07:22:00,010 - app.DataManager - INFO - function:import_weather_measures - Imported into DataFrame
+2019-10-09 07:22:00,144 - app.DataManager - INFO - function:import_locational_data - Imported into DataFrame
+2019-10-09 07:22:00,165 - app.DataManager - DEBUG - function:enrich_data_stations - Appended columns to DataFrame 'data_stations'
+2019-10-09 07:22:00,338 - app.DataManager - INFO - function:get_nearest_zipcode - Mapped data_stations to zipcodes
+2019-10-09 07:22:00,641 - app.DataManager - INFO - function:create_table_measures - Created a new measures table 'temp'
+2019-10-09 07:22:00,679 - app.DataManager - INFO - function:reset_temporal_table - Reset table 'temp'
+2019-10-09 07:22:05,587 - app.DataManager - INFO - function:sql_from_weathermeasures - Transferred DataFrame to Table 'temp' in Database 'Engine(sqlite:///data/weather_repo.sqlite)'
+2019-10-09 07:22:06,552 - app.DataManager - DEBUG - function:delete_old_weather_data - Cleared duplicate data from temporary table
+2019-10-09 07:22:06,826 - app.DataManager - INFO - function:insert_new_weather_data - Updated weather data: to last date [('2019-10-07 00:00:00.000000',)] from last date [('2019-07-08 00:00:00.000000',)]
+2019-10-09 07:22:06,826 - app.DataManager - INFO - function:run - DataManager closed.

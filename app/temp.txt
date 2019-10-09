@@ -1,0 +1,383 @@
+import app
+
+DR = app.DataRequester.DataRequester()
+DR.run()
+
+DM = app.DataManager.DataManager()
+DM.run()
+
+self = app.DataManager.DataManager()
+
+
+
+self.find_last_zipfile()
+self.connect_database()
+
+self.import_weather_stations()
+self.import_weather_measures()
+self.import_locational_data()
+
+self.enrich_data_stations()
+self.get_nearest_zipcode()
+
+self.reset_temporal_table()
+self.sql_from_weathermeasures()
+self.delete_old_weather_data()
+self.insert_new_weather_data()
+
+
+
+Python 3.7.2 (tags/v3.7.2:9a3ffc0492, Dec 23 2018, 23:09:28) [MSC v.1916 64 bit (AMD64)] on win32
+import app
+                         WeatherDataManager
+=================================================================
+INFO function get_logger: Using E-Mail Logging handler
+ERROR function get_logger: TEST
+--- Logging error ---
+Traceback (most recent call last):
+  File "F:\Python\Python37\lib\logging\handlers.py", line 1007, in emit
+    smtp = smtplib.SMTP(self.mailhost, port, timeout=self.timeout)
+  File "F:\Python\Python37\lib\smtplib.py", line 251, in __init__
+    (code, msg) = self.connect(host, port)
+  File "F:\Python\Python37\lib\smtplib.py", line 336, in connect
+    self.sock = self._get_socket(host, port, self.timeout)
+  File "F:\Python\Python37\lib\smtplib.py", line 307, in _get_socket
+    self.source_address)
+  File "F:\Python\Python37\lib\socket.py", line 727, in create_connection
+    raise err
+  File "F:\Python\Python37\lib\socket.py", line 716, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [WinError 10061] Es konnte keine Verbindung hergestellt werden, da der Zielcomputer die Verbindung verweigerte
+Call stack:
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 399, in <module>
+    pydevconsole.start_client(host, port)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 327, in start_client
+    process_exec_queue(interpreter)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 174, in process_exec_queue
+    more = interpreter.add_exec(code_fragment)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\_pydev_bundle\pydev_code_executor.py", line 106, in add_exec
+    more = self.do_add_exec(code_fragment)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 84, in do_add_exec
+    command.run()
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\_pydev_bundle\pydev_console_types.py", line 35, in run
+    self.more = self.interpreter.runsource(text, '<input>', symbol)
+  File "F:\Python\Python37\lib\code.py", line 74, in runsource
+    self.runcode(code)
+  File "F:\Python\Python37\lib\code.py", line 90, in runcode
+    exec(code, self.locals)
+  File "<input>", line 1, in <module>
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\_pydev_bundle\pydev_import_hook.py", line 21, in do_import
+    module = self._system_import(name, *args, **kwargs)
+  File "<frozen importlib._bootstrap>", line 983, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 967, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 677, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 728, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "F:\Python\_Working\Wetter-Gustini\app\__init__.py", line 31, in <module>
+    dr = DR.DataRequester()
+  File "F:\Python\_Working\Wetter-Gustini\app\DataRequester.py", line 11, in __init__
+    self.get_logger()
+  File "F:\Python\_Working\Wetter-Gustini\app\DataRequester.py", line 70, in get_logger
+    self.logger.error("TEST")
+Message: 'TEST'
+Arguments: ()
+INFO function run: DataRequester running...
+F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\urllib3\connectionpool.py:851: InsecureRequestWarning: Unverified HTTPS request is being made. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning)
+F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\urllib3\connectionpool.py:851: InsecureRequestWarning: Unverified HTTPS request is being made. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning)
+INFO function save_zip_locally: Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-09_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-09_wetterdaten_CSV.zip
+INFO function run: DataRequester closed!
+INFO function get_logger: Using E-Mail Logging handler
+ERROR function get_logger: TEST
+--- Logging error ---
+Traceback (most recent call last):
+  File "F:\Python\Python37\lib\logging\handlers.py", line 1007, in emit
+    smtp = smtplib.SMTP(self.mailhost, port, timeout=self.timeout)
+  File "F:\Python\Python37\lib\smtplib.py", line 251, in __init__
+    (code, msg) = self.connect(host, port)
+  File "F:\Python\Python37\lib\smtplib.py", line 336, in connect
+    self.sock = self._get_socket(host, port, self.timeout)
+  File "F:\Python\Python37\lib\smtplib.py", line 307, in _get_socket
+    self.source_address)
+  File "F:\Python\Python37\lib\socket.py", line 727, in create_connection
+    raise err
+  File "F:\Python\Python37\lib\socket.py", line 716, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [WinError 10061] Es konnte keine Verbindung hergestellt werden, da der Zielcomputer die Verbindung verweigerte
+Call stack:
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 399, in <module>
+    pydevconsole.start_client(host, port)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 327, in start_client
+    process_exec_queue(interpreter)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 174, in process_exec_queue
+    more = interpreter.add_exec(code_fragment)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\_pydev_bundle\pydev_code_executor.py", line 106, in add_exec
+    more = self.do_add_exec(code_fragment)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 84, in do_add_exec
+    command.run()
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\_pydev_bundle\pydev_console_types.py", line 35, in run
+    self.more = self.interpreter.runsource(text, '<input>', symbol)
+  File "F:\Python\Python37\lib\code.py", line 74, in runsource
+    self.runcode(code)
+  File "F:\Python\Python37\lib\code.py", line 90, in runcode
+    exec(code, self.locals)
+  File "<input>", line 1, in <module>
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\_pydev_bundle\pydev_import_hook.py", line 21, in do_import
+    module = self._system_import(name, *args, **kwargs)
+  File "<frozen importlib._bootstrap>", line 983, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 967, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 677, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 728, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "F:\Python\_Working\Wetter-Gustini\app\__init__.py", line 33, in <module>
+    dm = DM.DataManager()
+  File "F:\Python\_Working\Wetter-Gustini\app\DataManager.py", line 21, in __init__
+    self.get_logger()
+  File "F:\Python\_Working\Wetter-Gustini\app\DataManager.py", line 102, in get_logger
+    self.logger.error("TEST")
+Message: 'TEST'
+Arguments: ()
+INFO function run: DataManager running...
+INFO function find_last_zipfile: Using last zipfile: 'F:\Python\_Working\Wetter-Gustini\data\2019-10-09_wetterdaten_CSV.zip'
+INFO function connect_database: Connected to database: Engine(sqlite:///data/weather_repo.sqlite)
+INFO function import_weather_stations: Imported into DataFrame
+INFO function import_weather_measures: Imported into DataFrame
+INFO function import_locational_data: Imported into DataFrame
+INFO function get_nearest_zipcode: Mapped data_stations to zipcodes
+INFO function create_table_measures: Created a new measures table 'temp'
+INFO function reset_temporal_table: Reset table 'temp'
+INFO function sql_from_weathermeasures: Transferred DataFrame to Table 'temp' in Database 'Engine(sqlite:///data/weather_repo.sqlite)'
+ERROR function delete_old_weather_data: Error clearing duplicate data from temporary table
+Traceback (most recent call last):
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1244, in _execute_context
+    cursor, statement, parameters, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\default.py", line 550, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: no such table: measures
+The above exception was the direct cause of the following exception:
+Traceback (most recent call last):
+  File "F:\Python\_Working\Wetter-Gustini\app\DataManager.py", line 403, in delete_old_weather_data
+    text("DELETE FROM temp WHERE (Stations_ID, Datum) "
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 2166, in execute
+    return connection.execute(statement, *multiparams, **params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 988, in execute
+    return meth(self, multiparams, params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\sql\elements.py", line 287, in _execute_on_connection
+    return connection._execute_clauseelement(self, multiparams, params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1107, in _execute_clauseelement
+    distilled_params,
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1248, in _execute_context
+    e, statement, parameters, cursor, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1466, in _handle_dbapi_exception
+    util.raise_from_cause(sqlalchemy_exception, exc_info)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\util\compat.py", line 399, in raise_from_cause
+    reraise(type(exception), exception, tb=exc_tb, cause=cause)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\util\compat.py", line 153, in reraise
+    raise value.with_traceback(tb)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1244, in _execute_context
+    cursor, statement, parameters, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\default.py", line 550, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: measures
+[SQL: DELETE FROM temp WHERE (Stations_ID, Datum) IN (SELECT DISTINCT Stations_ID, Datum FROM measures);]
+(Background on this error at: http://sqlalche.me/e/e3q8)
+--- Logging error ---
+Traceback (most recent call last):
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1244, in _execute_context
+    cursor, statement, parameters, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\default.py", line 550, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: no such table: measures
+The above exception was the direct cause of the following exception:
+Traceback (most recent call last):
+  File "F:\Python\_Working\Wetter-Gustini\app\DataManager.py", line 403, in delete_old_weather_data
+    text("DELETE FROM temp WHERE (Stations_ID, Datum) "
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 2166, in execute
+    return connection.execute(statement, *multiparams, **params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 988, in execute
+    return meth(self, multiparams, params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\sql\elements.py", line 287, in _execute_on_connection
+    return connection._execute_clauseelement(self, multiparams, params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1107, in _execute_clauseelement
+    distilled_params,
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1248, in _execute_context
+    e, statement, parameters, cursor, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1466, in _handle_dbapi_exception
+    util.raise_from_cause(sqlalchemy_exception, exc_info)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\util\compat.py", line 399, in raise_from_cause
+    reraise(type(exception), exception, tb=exc_tb, cause=cause)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\util\compat.py", line 153, in reraise
+    raise value.with_traceback(tb)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1244, in _execute_context
+    cursor, statement, parameters, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\default.py", line 550, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: measures
+[SQL: DELETE FROM temp WHERE (Stations_ID, Datum) IN (SELECT DISTINCT Stations_ID, Datum FROM measures);]
+(Background on this error at: http://sqlalche.me/e/e3q8)
+During handling of the above exception, another exception occurred:
+Traceback (most recent call last):
+  File "F:\Python\Python37\lib\logging\handlers.py", line 1007, in emit
+    smtp = smtplib.SMTP(self.mailhost, port, timeout=self.timeout)
+  File "F:\Python\Python37\lib\smtplib.py", line 251, in __init__
+    (code, msg) = self.connect(host, port)
+  File "F:\Python\Python37\lib\smtplib.py", line 336, in connect
+    self.sock = self._get_socket(host, port, self.timeout)
+  File "F:\Python\Python37\lib\smtplib.py", line 307, in _get_socket
+    self.source_address)
+  File "F:\Python\Python37\lib\socket.py", line 727, in create_connection
+    raise err
+  File "F:\Python\Python37\lib\socket.py", line 716, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [WinError 10061] Es konnte keine Verbindung hergestellt werden, da der Zielcomputer die Verbindung verweigerte
+Call stack:
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 399, in <module>
+    pydevconsole.start_client(host, port)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 327, in start_client
+    process_exec_queue(interpreter)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 174, in process_exec_queue
+    more = interpreter.add_exec(code_fragment)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\_pydev_bundle\pydev_code_executor.py", line 106, in add_exec
+    more = self.do_add_exec(code_fragment)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 84, in do_add_exec
+    command.run()
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\_pydev_bundle\pydev_console_types.py", line 35, in run
+    self.more = self.interpreter.runsource(text, '<input>', symbol)
+  File "F:\Python\Python37\lib\code.py", line 74, in runsource
+    self.runcode(code)
+  File "F:\Python\Python37\lib\code.py", line 90, in runcode
+    exec(code, self.locals)
+  File "<input>", line 1, in <module>
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\_pydev_bundle\pydev_import_hook.py", line 21, in do_import
+    module = self._system_import(name, *args, **kwargs)
+  File "<frozen importlib._bootstrap>", line 983, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 967, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 677, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 728, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "F:\Python\_Working\Wetter-Gustini\app\__init__.py", line 34, in <module>
+    dm.run()
+  File "F:\Python\_Working\Wetter-Gustini\app\DataManager.py", line 52, in run
+    self.delete_old_weather_data()
+  File "F:\Python\_Working\Wetter-Gustini\app\DataManager.py", line 408, in delete_old_weather_data
+    self.logger.exception("Error clearing duplicate data from temporary table")
+Message: 'Error clearing duplicate data from temporary table'
+Arguments: ()
+ERROR function insert_new_weather_data: Error updating/integrating new weather_data into permanent database table {}
+Traceback (most recent call last):
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1244, in _execute_context
+    cursor, statement, parameters, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\default.py", line 550, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: no such table: measures
+The above exception was the direct cause of the following exception:
+Traceback (most recent call last):
+  File "F:\Python\_Working\Wetter-Gustini\app\DataManager.py", line 415, in insert_new_weather_data
+    latest_dates = {"measure_before": self.engine.execute(text("SELECT Max(Datum) from measures;")).fetchall(),
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 2166, in execute
+    return connection.execute(statement, *multiparams, **params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 988, in execute
+    return meth(self, multiparams, params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\sql\elements.py", line 287, in _execute_on_connection
+    return connection._execute_clauseelement(self, multiparams, params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1107, in _execute_clauseelement
+    distilled_params,
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1248, in _execute_context
+    e, statement, parameters, cursor, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1466, in _handle_dbapi_exception
+    util.raise_from_cause(sqlalchemy_exception, exc_info)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\util\compat.py", line 399, in raise_from_cause
+    reraise(type(exception), exception, tb=exc_tb, cause=cause)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\util\compat.py", line 153, in reraise
+    raise value.with_traceback(tb)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1244, in _execute_context
+    cursor, statement, parameters, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\default.py", line 550, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: measures
+[SQL: SELECT Max(Datum) from measures;]
+(Background on this error at: http://sqlalche.me/e/e3q8)
+--- Logging error ---
+Traceback (most recent call last):
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1244, in _execute_context
+    cursor, statement, parameters, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\default.py", line 550, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: no such table: measures
+The above exception was the direct cause of the following exception:
+Traceback (most recent call last):
+  File "F:\Python\_Working\Wetter-Gustini\app\DataManager.py", line 415, in insert_new_weather_data
+    latest_dates = {"measure_before": self.engine.execute(text("SELECT Max(Datum) from measures;")).fetchall(),
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 2166, in execute
+    return connection.execute(statement, *multiparams, **params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 988, in execute
+    return meth(self, multiparams, params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\sql\elements.py", line 287, in _execute_on_connection
+    return connection._execute_clauseelement(self, multiparams, params)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1107, in _execute_clauseelement
+    distilled_params,
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1248, in _execute_context
+    e, statement, parameters, cursor, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1466, in _handle_dbapi_exception
+    util.raise_from_cause(sqlalchemy_exception, exc_info)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\util\compat.py", line 399, in raise_from_cause
+    reraise(type(exception), exception, tb=exc_tb, cause=cause)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\util\compat.py", line 153, in reraise
+    raise value.with_traceback(tb)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\base.py", line 1244, in _execute_context
+    cursor, statement, parameters, context
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\sqlalchemy\engine\default.py", line 550, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: measures
+[SQL: SELECT Max(Datum) from measures;]
+(Background on this error at: http://sqlalche.me/e/e3q8)
+During handling of the above exception, another exception occurred:
+Traceback (most recent call last):
+  File "F:\Python\Python37\lib\logging\handlers.py", line 1007, in emit
+    smtp = smtplib.SMTP(self.mailhost, port, timeout=self.timeout)
+  File "F:\Python\Python37\lib\smtplib.py", line 251, in __init__
+    (code, msg) = self.connect(host, port)
+  File "F:\Python\Python37\lib\smtplib.py", line 336, in connect
+    self.sock = self._get_socket(host, port, self.timeout)
+  File "F:\Python\Python37\lib\smtplib.py", line 307, in _get_socket
+    self.source_address)
+  File "F:\Python\Python37\lib\socket.py", line 727, in create_connection
+    raise err
+  File "F:\Python\Python37\lib\socket.py", line 716, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [WinError 10061] Es konnte keine Verbindung hergestellt werden, da der Zielcomputer die Verbindung verweigerte
+Call stack:
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 399, in <module>
+    pydevconsole.start_client(host, port)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 327, in start_client
+    process_exec_queue(interpreter)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 174, in process_exec_queue
+    more = interpreter.add_exec(code_fragment)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\_pydev_bundle\pydev_code_executor.py", line 106, in add_exec
+    more = self.do_add_exec(code_fragment)
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\pydevconsole.py", line 84, in do_add_exec
+    command.run()
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\_pydev_bundle\pydev_console_types.py", line 35, in run
+    self.more = self.interpreter.runsource(text, '<input>', symbol)
+  File "F:\Python\Python37\lib\code.py", line 74, in runsource
+    self.runcode(code)
+  File "F:\Python\Python37\lib\code.py", line 90, in runcode
+    exec(code, self.locals)
+  File "<input>", line 1, in <module>
+  File "C:\Program Files\JetBrains\PyCharm 2019.3.1\helpers\pydev\_pydev_bundle\pydev_import_hook.py", line 21, in do_import
+    module = self._system_import(name, *args, **kwargs)
+  File "<frozen importlib._bootstrap>", line 983, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 967, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 677, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 728, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "F:\Python\_Working\Wetter-Gustini\app\__init__.py", line 34, in <module>
+    dm.run()
+  File "F:\Python\_Working\Wetter-Gustini\app\DataManager.py", line 53, in run
+    self.insert_new_weather_data()  # show changes in last date of weather date
+  File "F:\Python\_Working\Wetter-Gustini\app\DataManager.py", line 428, in insert_new_weather_data
+    self.logger.exception("Error updating/integrating new weather_data into permanent database table {}")
+Message: 'Error updating/integrating new weather_data into permanent database table {}'
+Arguments: ()
+INFO function run: DataManager closed.
