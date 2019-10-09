@@ -130,7 +130,8 @@ class DataRequester(object):
             zip_file_name = self.last_zip_file.rsplit(sep="/", maxsplit=1)[-1]  # get the last element of url
 
             # and create the "filepath" at "/data/*.zip"
-            self.saved_zipfile_path = Path.cwd().joinpath("data").joinpath(zip_file_name)
+            data_dir = self.config.get("general", "data_dir")
+            self.saved_zipfile_path = Path.cwd().joinpath(data_dir).joinpath(zip_file_name)
             self.logger.debug(f"Created filepath for new zipfile")
         except Exception:
             self.logger.exception(f"Error loading {self.saved_zipfile_path}")

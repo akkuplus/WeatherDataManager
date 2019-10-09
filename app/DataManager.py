@@ -267,7 +267,8 @@ class DataManager(object):
         import pandas as pd
         import numpy as np
 
-        file_name = 'resources/geodaten_de.csv'  # filename of static mapping resources,
+        data_dir = self.config.get("general", "data_dir")
+        file_name = data_dir + '/geodaten_de.csv'  # filename of static mapping resources,
         # that relates zip codes to coordinates in Germany
         new_columns = ['Plz', 'Ort', 'Latitude', 'Longitude']
 

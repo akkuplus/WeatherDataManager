@@ -214,3 +214,101 @@ sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: measu
 2019-10-09 07:22:06,552 - app.DataManager - DEBUG - function:delete_old_weather_data - Cleared duplicate data from temporary table
 2019-10-09 07:22:06,826 - app.DataManager - INFO - function:insert_new_weather_data - Updated weather data: to last date [('2019-10-07 00:00:00.000000',)] from last date [('2019-07-08 00:00:00.000000',)]
 2019-10-09 07:22:06,826 - app.DataManager - INFO - function:run - DataManager closed.
+2019-10-09 23:03:23,527 - app.DataRequester - INFO - function:get_logger - Using E-Mail Logging handler
+2019-10-09 23:03:23,528 - app.DataRequester - ERROR - function:get_logger - TEST
+2019-10-09 23:03:25,593 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-09 23:03:27,985 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-09 23:03:28,009 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-09 23:03:28,826 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-09 23:03:28,832 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-09_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-09_wetterdaten_CSV.zip
+2019-10-09 23:03:28,834 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-09 23:03:28,840 - app.DataManager - INFO - function:get_logger - Using E-Mail Logging handler
+2019-10-09 23:03:28,841 - app.DataManager - ERROR - function:get_logger - TEST
+2019-10-09 23:03:30,882 - app.DataManager - INFO - function:run - DataManager running...
+2019-10-09 23:03:30,883 - app.DataManager - DEBUG - function:find_last_zipfile - Searching for last zipfile in: F:\Python\_Working\Wetter-Gustini\data
+2019-10-09 23:03:30,886 - app.DataManager - INFO - function:find_last_zipfile - Using last zipfile: 'F:\Python\_Working\Wetter-Gustini\data\2019-10-09_wetterdaten_CSV.zip'
+2019-10-09 23:03:31,370 - app.DataManager - INFO - function:connect_database - Connected to database: Engine(sqlite:///data/weather_repo.sqlite)
+2019-10-09 23:03:34,502 - app.DataManager - INFO - function:import_weather_stations - Imported into DataFrame
+2019-10-09 23:03:35,202 - app.DataManager - INFO - function:import_weather_measures - Imported into DataFrame
+2019-10-09 23:03:35,343 - app.DataManager - INFO - function:import_locational_data - Imported into DataFrame
+2019-10-09 23:03:35,366 - app.DataManager - DEBUG - function:enrich_data_stations - Appended columns to DataFrame 'data_stations'
+2019-10-09 23:03:35,552 - app.DataManager - INFO - function:get_nearest_zipcode - Mapped data_stations to zipcodes
+2019-10-09 23:03:35,865 - app.DataManager - INFO - function:create_table_measures - Created a new measures table 'temp'
+2019-10-09 23:03:35,921 - app.DataManager - INFO - function:reset_temporal_table - Reset table 'temp'
+2019-10-09 23:03:41,797 - app.DataManager - INFO - function:sql_from_weathermeasures - Transferred DataFrame to Table 'temp' in Database 'Engine(sqlite:///data/weather_repo.sqlite)'
+2019-10-09 23:03:42,548 - app.DataManager - DEBUG - function:delete_old_weather_data - Cleared duplicate data from temporary table
+2019-10-09 23:03:42,858 - app.DataManager - INFO - function:insert_new_weather_data - Updated weather data: to last date [('2019-10-07 00:00:00.000000',)] from last date [('2019-07-08 00:00:00.000000',)]
+2019-10-09 23:03:42,859 - app.DataManager - INFO - function:run - DataManager closed.
+2019-10-09 23:07:41,561 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-09 23:07:46,443 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-09 23:07:46,467 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-09 23:07:53,589 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-09 23:07:53,594 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-09_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-09_wetterdaten_CSV.zip
+2019-10-09 23:07:53,596 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-09 23:07:53,603 - app.DataManager - INFO - function:run - DataManager running...
+2019-10-09 23:07:53,605 - app.DataManager - DEBUG - function:find_last_zipfile - Searching for last zipfile in: F:\Python\_Working\Wetter-Gustini\data
+2019-10-09 23:07:53,610 - app.DataManager - INFO - function:find_last_zipfile - Using last zipfile: 'F:\Python\_Working\Wetter-Gustini\data\2019-10-09_wetterdaten_CSV.zip'
+2019-10-09 23:07:54,156 - app.DataManager - INFO - function:connect_database - Connected to database: Engine(sqlite:///data/weather_repo.sqlite)
+2019-10-09 23:07:57,425 - app.DataManager - INFO - function:import_weather_stations - Imported into DataFrame
+2019-10-09 23:07:58,152 - app.DataManager - INFO - function:import_weather_measures - Imported into DataFrame
+2019-10-09 23:07:58,163 - app.DataManager - ERROR - function:run - Error while running DataManager
+Traceback (most recent call last):
+  File "F:\Python\_Working\Wetter-Gustini\app\DataManager.py", line 45, in run
+    self.import_locational_data()
+  File "F:\Python\_Working\Wetter-Gustini\app\DataManager.py", line 294, in import_locational_data
+    encoding='cp1250'  # converts typical german encoding
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\pandas\io\parsers.py", line 702, in parser_f
+    return _read(filepath_or_buffer, kwds)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\pandas\io\parsers.py", line 429, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\pandas\io\parsers.py", line 895, in __init__
+    self._make_engine(self.engine)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\pandas\io\parsers.py", line 1122, in _make_engine
+    self._engine = CParserWrapper(self.f, **self.options)
+  File "F:\Python\_Working\Wetter-Gustini\env\lib\site-packages\pandas\io\parsers.py", line 1853, in __init__
+    self._reader = parsers.TextReader(src, **kwds)
+  File "pandas\_libs\parsers.pyx", line 387, in pandas._libs.parsers.TextReader.__cinit__
+  File "pandas\_libs\parsers.pyx", line 705, in pandas._libs.parsers.TextReader._setup_parser_source
+FileNotFoundError: [Errno 2] File b'resources/geodaten_de.csv' does not exist: b'resources/geodaten_de.csv'
+2019-10-09 23:10:39,785 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-09 23:10:43,433 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-09 23:10:43,449 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-09 23:10:53,749 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-09 23:10:53,754 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-09_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-09_wetterdaten_CSV.zip
+2019-10-09 23:10:53,755 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-09 23:10:53,759 - app.DataManager - INFO - function:run - DataManager running...
+2019-10-09 23:10:53,760 - app.DataManager - DEBUG - function:find_last_zipfile - Searching for last zipfile in: F:\Python\_Working\Wetter-Gustini\data
+2019-10-09 23:10:53,763 - app.DataManager - INFO - function:find_last_zipfile - Using last zipfile: 'F:\Python\_Working\Wetter-Gustini\data\2019-10-09_wetterdaten_CSV.zip'
+2019-10-09 23:10:54,274 - app.DataManager - INFO - function:connect_database - Connected to database: Engine(sqlite:///data/weather_repo.sqlite)
+2019-10-09 23:10:57,426 - app.DataManager - INFO - function:import_weather_stations - Imported into DataFrame
+2019-10-09 23:10:58,190 - app.DataManager - INFO - function:import_weather_measures - Imported into DataFrame
+2019-10-09 23:10:58,321 - app.DataManager - INFO - function:import_locational_data - Imported into DataFrame
+2019-10-09 23:10:58,406 - app.DataManager - DEBUG - function:enrich_data_stations - Appended columns to DataFrame 'data_stations'
+2019-10-09 23:10:58,587 - app.DataManager - INFO - function:get_nearest_zipcode - Mapped data_stations to zipcodes
+2019-10-09 23:10:58,909 - app.DataManager - INFO - function:create_table_measures - Created a new measures table 'temp'
+2019-10-09 23:10:58,966 - app.DataManager - INFO - function:reset_temporal_table - Reset table 'temp'
+2019-10-09 23:11:04,611 - app.DataManager - INFO - function:sql_from_weathermeasures - Transferred DataFrame to Table 'temp' in Database 'Engine(sqlite:///data/weather_repo.sqlite)'
+2019-10-09 23:11:05,404 - app.DataManager - DEBUG - function:delete_old_weather_data - Cleared duplicate data from temporary table
+2019-10-09 23:11:05,679 - app.DataManager - INFO - function:insert_new_weather_data - Updated weather data: to last date [('2019-10-07 00:00:00.000000',)] from last date [('2019-07-08 00:00:00.000000',)]
+2019-10-09 23:11:05,680 - app.DataManager - INFO - function:run - DataManager closed.
+2019-10-09 23:11:59,550 - app.DataRequester - INFO - function:run - DataRequester running...
+2019-10-09 23:12:01,243 - app.DataRequester - DEBUG - function:get_distant_filename - Found website and parsed html-file
+2019-10-09 23:12:01,267 - app.DataRequester - DEBUG - function:get_distant_filename - Found a zipfile in HTML-code
+2019-10-09 23:12:05,583 - app.DataRequester - DEBUG - function:save_zip_locally - Created filepath for new zipfile
+2019-10-09 23:12:05,588 - app.DataRequester - INFO - function:save_zip_locally - Saved F:\Python\_Working\Wetter-Gustini\data\2019-10-09_wetterdaten_CSV.zip from https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-10-09_wetterdaten_CSV.zip
+2019-10-09 23:12:05,590 - app.DataRequester - INFO - function:run - DataRequester closed!
+2019-10-09 23:12:05,594 - app.DataManager - INFO - function:run - DataManager running...
+2019-10-09 23:12:05,595 - app.DataManager - DEBUG - function:find_last_zipfile - Searching for last zipfile in: F:\Python\_Working\Wetter-Gustini\data
+2019-10-09 23:12:05,598 - app.DataManager - INFO - function:find_last_zipfile - Using last zipfile: 'F:\Python\_Working\Wetter-Gustini\data\2019-10-09_wetterdaten_CSV.zip'
+2019-10-09 23:12:06,254 - app.DataManager - INFO - function:connect_database - Connected to database: Engine(sqlite:///data/weather_repo.sqlite)
+2019-10-09 23:12:10,386 - app.DataManager - INFO - function:import_weather_stations - Imported into DataFrame
+2019-10-09 23:12:11,151 - app.DataManager - INFO - function:import_weather_measures - Imported into DataFrame
+2019-10-09 23:12:11,300 - app.DataManager - INFO - function:import_locational_data - Imported into DataFrame
+2019-10-09 23:12:11,321 - app.DataManager - DEBUG - function:enrich_data_stations - Appended columns to DataFrame 'data_stations'
+2019-10-09 23:12:11,507 - app.DataManager - INFO - function:get_nearest_zipcode - Mapped data_stations to zipcodes
+2019-10-09 23:12:11,792 - app.DataManager - INFO - function:create_table_measures - Created a new measures table 'temp'
+2019-10-09 23:12:11,845 - app.DataManager - INFO - function:reset_temporal_table - Reset table 'temp'
+2019-10-09 23:12:18,254 - app.DataManager - INFO - function:sql_from_weathermeasures - Transferred DataFrame to Table 'temp' in Database 'Engine(sqlite:///data/weather_repo.sqlite)'
+2019-10-09 23:12:19,811 - app.DataManager - DEBUG - function:delete_old_weather_data - Cleared duplicate data from temporary table
+2019-10-09 23:12:20,139 - app.DataManager - INFO - function:insert_new_weather_data - Updated weather data: to last date [('2019-10-07 00:00:00.000000',)] from last date [('2019-10-07 00:00:00.000000',)]
+2019-10-09 23:12:20,140 - app.DataManager - INFO - function:run - DataManager closed.
