@@ -33,7 +33,6 @@ class DataManager(object):
         # TODO: request name-parameters from configuration_file
         self.stations = None
         self.measures = None
-        self.run()
 
     def run(self):
         try:
@@ -52,12 +51,14 @@ class DataManager(object):
             self.sql_from_weathermeasures()
             self.delete_old_weather_data()
             self.insert_new_weather_data()  # show changes in last date of weather date
+
             self.logger.info("DataManager closed.")
         except Exception:
             self.logger.exception(f"Error while running DataManager")
 
     def get_logger(self):
         import logging
+        import logging.handlers
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
@@ -86,23 +87,28 @@ class DataManager(object):
             self.logger.info(f"Using E-Mail Logging handler")
             # create email handler which notifies on level errors and above
 
-            #emailhandler = logging.handlers.SMTPHandler(
-            #    "mailhost",
-            #    "fromaddr",
-            #    self.config.get("error", "recipients"),
-            #    "subject",
-            #    credentials=None)
-            #emailhandler.setLevel(logging.ERROR)
-            #emailhandler.setFormatter(formatter)
-            #self.logger.addHandler(emailhandler)
+            error_handler = logging.handlers.SMTPHandler(
+                mailhost=("localhost", 25),
+                fromaddr="me@me.de",
+                toaddrs=[self.config.get("error", "recipients")],
+                subject="Error WeatherDataManager",
+            )
+            error_handler.setLevel(logging.WARNING)
+            formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - function:%(funcName)s - %(message)s')
+            # error_handler.setFormatter(logging.Formatter(formatter))
+            error_handler.setFormatter(formatter)
+            self.logger.addHandler(error_handler)
+            self.logger.error("TEST")
 
     def find_last_zipfile(self):
         """Finds the last zip file containing weather resources that is available in subdirectory 'resources'."""
         from pathlib import Path
 
-        self.saved_zipfile_path = Path.cwd().joinpath("resources")
-        assert self.saved_zipfile_path, IsADirectoryError("Error generating path '/resources/' to last zipfile")
-        self.logger.debug(f"Searching for last zipfile in: '{self.saved_zipfile_path}'")
+        data_dir = self.config.get("general", "data_dir")
+        self.saved_zipfile_path = Path.cwd().joinpath(data_dir)
+        assert self.saved_zipfile_path, IsADirectoryError(f"Error generating path /{data_dir}/ to last zipfile")
+        self.logger.debug(f"Searching for last zipfile in: {self.saved_zipfile_path}")
 
         try:
             # The filename of all saved zipfiles includes a date part.
@@ -133,19 +139,19 @@ class DataManager(object):
         except Exception:
             self.logger.exception()
 
-
     def connect_database(self):
         """Connect to database."""
         import sqlalchemy as db
 
         try:
+            database_path = self.config.get("general", "data_dir") + "/" +self.config.get("sqlite", "database")
             sqlite_db = {'drivername': 'sqlite',
-                'database': self.config.get("sqlite", "database")}    # if file is in subfolder, ...
-            db_conn = db.engine.url.URL(**sqlite_db)
-            self.engine = db.create_engine(db_conn)  # create connection to database
+                'database': database_path}
+            self.db_conn = db.engine.url.URL(**sqlite_db)
+            self.engine = db.create_engine(self.db_conn)  # create connection to database
             self.connection = self.engine.connect()  # connect for interaction with database
             self.metadata = db.MetaData()
-            self.logger.info(f"Setup and connected to database: '{self.engine}'")
+            self.logger.info(f"Connected to database: {self.engine}")
         except Exception:
             self.logger.exception(f"Error connecting to database")
 
@@ -338,7 +344,7 @@ class DataManager(object):
 
             self.data_stations[["Plz_matched", "Ort_matched", "Longitude_matched", "Latitude_matched"]] \
                 = self.data_stations.apply(self.find_nearest_zipcode, axis=1)
-            self.logger.info("Mapped a data_station to a zipcode")
+            self.logger.info("Mapped data_stations to zipcodes")
         except Exception:
             self.logger.exception("Can't map a data_station to a zipcode")
 
@@ -390,7 +396,7 @@ class DataManager(object):
                 text("DELETE FROM temp WHERE (Stations_ID, Datum) "
                      "IN (SELECT DISTINCT Stations_ID, Datum FROM measures);"
                      ))
-            self.logger.debug("Clear duplicate data from temporary table")
+            self.logger.debug("Cleared duplicate data from temporary table")
         except Exception:
             self.logger.exception("Error clearing duplicate data from temporary table")
 
@@ -404,12 +410,9 @@ class DataManager(object):
 
             self.engine.execute(
                 text('INSERT INTO measures SELECT * FROM temp;'))
-
             latest_dates["measure_after"] = self.engine.execute(text("SELECT Max(Datum) from measures;")).fetchall()
-
             self.logger.info(f"Updated weather data: to last date {latest_dates['measure_after']} " \
                              f"from last date {latest_dates['measure_before']}")
-
             # print("Updated weather data measure. \n"
             # "├ Last date before update: {before}\n"
             # "└ Last date after update: {after}\n".format(before=latest_dates["measure_before"],
