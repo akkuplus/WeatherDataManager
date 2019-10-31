@@ -9,16 +9,14 @@ from weather data station, and appends the newest data to an existing SQL table.
 # TODO: check relevant ports
 # TODO: roll-out strategy: docker, full setup or git pull?
 
-# from WeatherDataManager import (DataRequester, DataManager)
 
-#from app.DataRequester import DataRequester as DR
-#from app.DataManager import DataManager as DM
+import app.DataRequester
+import app.DataManager
+import app.Helper
+import time
 
-import app.DataRequester as DR
-import app.DataManager as DM
 
-print(f"                         WeatherDataManager"
-      f"\n================================================================="
+print(f"\n=======================WeatherDataManager========================="
 #     f"\nimport app"
 #      f"\nDR = app.DataRequester.DataRequester()"
 #      f"\nDR.run()"
@@ -27,7 +25,7 @@ print(f"                         WeatherDataManager"
       )
 
 
-dr = DR.DataRequester()
+dr = app.DataRequester.DataRequester()
 dr.run()
-dm = DM.DataManager()
+dm = app.DataManager.DataManager()
 dm.run()

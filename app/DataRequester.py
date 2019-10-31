@@ -1,14 +1,13 @@
+import app.Helper
+
+
 class DataRequester(object):
     """Request and save remote weather data into a local zip file."""
 
     def __init__(self):
-        import pathlib
-        import configparser
 
-        self.config = configparser.ConfigParser()
-        self.config.read(pathlib.Path.cwd().joinpath("config").joinpath("config.ini"))
-
-        self.get_logger()
+        self.logger = app.Helper.MyLogger()
+        self.logger.setup_handlers()
 
         self.last_zip_file = ""
         self.saved_zipfile_path = ""
@@ -22,62 +21,6 @@ class DataRequester(object):
             self.logger.info(f"DataRequester closed!")
         except Exception as ex:
             self.logger.exception(f"Error while running DataRequester")
-
-    def get_logger(self):
-
-        import logging
-        import logging.handlers
-
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.DEBUG)
-
-        # TODO: save handlers and options in config-file
-
-        # create console handler with a higher log level
-        consolhandler = logging.StreamHandler()
-        consolhandler.setLevel(logging.INFO)
-        consol_formatter = logging.Formatter(
-            '%(levelname)s function %(funcName)s: %(message)s'
-            )
-        consolhandler.setFormatter(consol_formatter)
-        self.logger.addHandler(consolhandler)
-
-        # create file handler which logs on level warnings and above
-        filehandler = logging.FileHandler('config/error_log.txt')
-        filehandler.setLevel(logging.DEBUG)
-        file_formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - function:%(funcName)s - %(message)s')
-        filehandler.setFormatter(file_formatter)
-        self.logger.addHandler(filehandler)
-
-        # TODO: implement email logging handler
-        if self.config.getboolean("error", "send_email"):
-            self.logger.info(f"Using E-Mail Logging handler")
-            # create email handler which notifies on level errors and above
-
-            error_handler = logging.handlers.SMTPHandler(
-                mailhost=("localhost", 25),
-                fromaddr="me@me.de",
-                toaddrs=[self.config.get("error", "recipients")],
-                subject="Error WeatherDataManager",
-            )
-            error_handler.setLevel(logging.WARNING)
-            formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - function:%(funcName)s - %(message)s')
-            # error_handler.setFormatter(logging.Formatter(formatter))
-            error_handler.setFormatter(formatter)
-            self.logger.addHandler(error_handler)
-            self.logger.error("TEST")
-
-            #emailhandler = logging.handlers.SMTPHandler(
-            #    "mailhost",
-            #    "fromaddr",
-            #    self.config.get("error", "recipients"),
-            #    "subject",
-            #    credentials=None)
-            #emailhandler.setLevel(logging.ERROR)
-            #emailhandler.setFormatter(formatter)
-            #self.logger.addHandler(emailhandler)
 
     def get_distant_filename(self):
         """Scrap HTML page to extract newest link."""
@@ -130,7 +73,7 @@ class DataRequester(object):
             zip_file_name = self.last_zip_file.rsplit(sep="/", maxsplit=1)[-1]  # get the last element of url
 
             # and create the "filepath" at "/data/*.zip"
-            data_dir = self.config.get("general", "data_dir")
+            data_dir = app.Helper.get_setting(["general", "data_dir"])
             self.saved_zipfile_path = Path.cwd().joinpath(data_dir).joinpath(zip_file_name)
             self.logger.debug(f"Created filepath for new zipfile")
         except Exception:

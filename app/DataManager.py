@@ -5,40 +5,38 @@ zip code next to each weather data station. The WDM enriches weather data with i
 from weather data station, and appends the newest data to an existing SQL table.
 """
 
+import pathlib
+import app.Helper
+from sqlalchemy.sql import text
+
+
 class DataManager(object):
     """DataManager imports data of weather stations and weather measures,
     finds the nearest zip code for a given data station,
     and imports new weather measure to SQL table."""
 
     def __init__(self):
-        import pathlib
-        import configparser
 
-        self.config = configparser.ConfigParser()
-        self.config.read(pathlib.Path.cwd().joinpath("config").joinpath("config.ini"))
+        #self.config = configparser.ConfigParser()
+        #self.config.read(pathlib.Path.cwd().joinpath("config").joinpath("config.ini"))
 
-        self.logger = None
-        self.get_logger()
+        self.logger = app.Helper.MyLogger()
+        self.logger.setup_handlers()
+        self.database = app.Helper.MyConnector()
 
-        self.connection = None
-        self.data_stations = None
-        self.data_weather = None
-        self.engine = None
         self.lat_values = None
         self.long_values = None
         self.mapping_zipcode_coordinates = None
-        self.metadata = None
         self.saved_zipfile_path = None
-
+        self.data_stations = None
+        self.data_weather = None
         # TODO: request name-parameters from configuration_file
-        self.stations = None
-        self.measures = None
+
 
     def run(self):
         try:
             self.logger.info(f"DataManager running...")
             self.find_last_zipfile()
-            self.connect_database()
 
             self.import_weather_stations()
             self.import_weather_measures()
@@ -47,65 +45,25 @@ class DataManager(object):
             self.enrich_data_stations()
             self.get_nearest_zipcode()
 
-            self.reset_temporal_table()
+            self.database.reset_temporal_table()
             self.sql_from_weathermeasures()
             self.delete_old_weather_data()
             self.insert_new_weather_data()  # show changes in last date of weather date
 
             self.logger.info("DataManager closed.")
+            print(f"\n========================= GOOD BYE ==============================")
         except Exception:
             self.logger.exception(f"Error while running DataManager")
 
-    def get_logger(self):
-        import logging
-        import logging.handlers
 
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.DEBUG)
-
-        # TODO: save handlers and options in config-file
-
-        # create console handler with a higher log level
-        consolhandler = logging.StreamHandler()
-        consolhandler.setLevel(logging.INFO)
-        consol_formatter = logging.Formatter(
-            '%(levelname)s function %(funcName)s: %(message)s'
-            )
-        consolhandler.setFormatter(consol_formatter)
-        self.logger.addHandler(consolhandler)
-
-        # create file handler which logs on level warnings and above
-        filehandler = logging.FileHandler('config/error_log.txt')
-        filehandler.setLevel(logging.DEBUG)
-        file_formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - function:%(funcName)s - %(message)s')
-        filehandler.setFormatter(file_formatter)
-        self.logger.addHandler(filehandler)
-
-        # TODO: implement email logging handler
-        if self.config.getboolean("error", "send_email"):
-            self.logger.info(f"Using E-Mail Logging handler")
-            # create email handler which notifies on level errors and above
-
-            error_handler = logging.handlers.SMTPHandler(
-                mailhost=("localhost", 25),
-                fromaddr="me@me.de",
-                toaddrs=[self.config.get("error", "recipients")],
-                subject="Error WeatherDataManager",
-            )
-            error_handler.setLevel(logging.WARNING)
-            formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - function:%(funcName)s - %(message)s')
-            # error_handler.setFormatter(logging.Formatter(formatter))
-            error_handler.setFormatter(formatter)
-            self.logger.addHandler(error_handler)
-            self.logger.error("TEST")
 
     def find_last_zipfile(self):
         """Finds the last zip file containing weather resources that is available in subdirectory 'resources'."""
         from pathlib import Path
 
-        data_dir = self.config.get("general", "data_dir")
+        #data_dir = self.config.get()
+        data_dir = app.Helper.get_setting(["general", "data_dir"])
+
         self.saved_zipfile_path = Path.cwd().joinpath(data_dir)
         assert self.saved_zipfile_path, IsADirectoryError(f"Error generating path /{data_dir}/ to last zipfile")
         self.logger.debug(f"Searching for last zipfile in: {self.saved_zipfile_path}")
@@ -138,79 +96,6 @@ class DataManager(object):
                 return False
         except Exception:
             self.logger.exception()
-
-    def connect_database(self):
-        """Connect to database."""
-        import sqlalchemy as db
-
-        try:
-            database_path = self.config.get("general", "data_dir") + "/" +self.config.get("sqlite", "database")
-            sqlite_db = {'drivername': 'sqlite',
-                'database': database_path}
-            self.db_conn = db.engine.url.URL(**sqlite_db)
-            self.engine = db.create_engine(self.db_conn)  # create connection to database
-            self.connection = self.engine.connect()  # connect for interaction with database
-            self.metadata = db.MetaData()
-            self.logger.info(f"Connected to database: {self.engine}")
-        except Exception:
-            self.logger.exception(f"Error connecting to database")
-
-    def create_table_stations(self):
-        """Create schema for table of weather data stations."""
-        import sqlalchemy as db
-
-        # TODO: request name-parameter from configuration_file
-        self.stations = db.Table(
-            'stations',
-            self.metadata,
-            db.Column('S_ID', db.Integer()),
-            db.Column('Standort', db.String(255), nullable=False),
-            db.Column('Geo_Breite', db.Float(), nullable=False),
-            db.Column('Geo_Laenge', db.Float(), nullable=False),
-            db.Column('Hoehe', db.Integer(), nullable=False),
-            db.Column('Betreiber', db.String(255), nullable=False),
-            db.Column('PLZ_matched', db.String(5), nullable=False),
-            db.Column('Ort_matched', db.String(255), nullable=False),
-            db.Column('Latitude_matched', db.Float(), nullable=False),
-            db.Column('Longitude_matched', db.Float(), nullable=False),
-            extend_existing=True
-        )
-
-        self.stations.create(self.engine, checkfirst=True)  # Create the table
-        self.logger.info(f"Created a new table 'stations'")
-
-    def create_table_measures(self, table_name=None):
-        """Create schema for temporary table of weather data measures that extend existing data measures."""
-        import sqlalchemy as db
-
-        if table_name is None:
-            table_name = input("Name of new table for weather data measures, e.g. 'temp'? ")
-
-        # TODO: request name-parameter from configuration_file
-        self.measures = db.Table(
-            table_name,
-            self.metadata,
-            db.Column('Stations_ID', db.Integer(), nullable=False, primary_key=True),
-            db.Column('Datum', db.DateTime(), nullable=False, primary_key=True),
-            db.Column('Qualitaet', db.Integer(), nullable=True),
-            db.Column('Min_5cm', db.Float(), nullable=True),
-            db.Column('Min_2m', db.Float(), nullable=True),
-            db.Column('Mittel_2m', db.Float(), nullable=True),
-            db.Column('Max_2m', db.Float(), nullable=True),
-            db.Column('Relative_Feuchte', db.Float(), nullable=True),
-            db.Column('Mittel_Windstaerke', db.Float(), nullable=True),
-            db.Column('Max_Windgeschwindigkeit', db.Float(), nullable=True),
-            db.Column('Sonnenscheindauer', db.Float(), nullable=True),
-            db.Column('Mittel_Bedeckungsgrad', db.Float(), nullable=True),
-            db.Column('Niederschlagshoehe', db.Float(), nullable=True),
-            db.Column('Mittel_Luftdruck', db.Float(), nullable=True),
-            extend_existing=True
-        )
-
-        self.measures.create(self.engine, checkfirst=True)  # Creates the table
-        self.logger.info(f"Created a new measures table '{table_name}'")
-
-
 
     def import_weather_stations(self):
         """Import weather stations and corresponding data
@@ -267,7 +152,8 @@ class DataManager(object):
         import pandas as pd
         import numpy as np
 
-        data_dir = self.config.get("general", "data_dir")
+        #data_dir = self.config.get("general", "data_dir")
+        data_dir = app.Helper.get_setting(["general", "data_dir"])
         file_name = data_dir + '/geodaten_de.csv'  # filename of static mapping resources,
         # that relates zip codes to coordinates in Germany
         new_columns = ['Plz', 'Ort', 'Latitude', 'Longitude']
@@ -351,69 +237,44 @@ class DataManager(object):
 
     def sql_from_weatherstations(self):
         try:
-            self.data_stations.to_sql('stations', con=self.engine, if_exists='append', index=False)
-            self.logger.info(f"Transferred DataFrame 'stations' to Database: '{self.engine}'")
+            self.data_stations.to_sql('Wettermessung', con=self.database.connection, if_exists='append', index=False)
+            self.logger.info(f"Transferred DataFrame 'stations' to Database: '{self.database.connection}'")
         except Exception:
             self.logger.exception("Error transferring DataFrame to Database")
 
     def sql_from_weathermeasures(self):
         try:
-            table_name = self.measures.fullname  # for example: table_name = "temp"
-            self.data_weather.to_sql(table_name, con=self.engine, if_exists='replace', index=False)
-            self.logger.info(f"Transferred DataFrame to Table '{table_name}' in Database '{self.engine}'")
-        except Exception:
-            self.logger.exception("Error transferring DataFrame to Database")
-
-    def reset_temporal_table(self):
-        """Recreate temporal weather resources table with identical schema in database."""
-        from sqlalchemy.orm import sessionmaker
-
-        try:
-            session = sessionmaker()
-            session.configure(bind=self.engine)
-            temporary_session = session()
-
-            # create schema for table measure
-            # TODO: request name-parameter from configuration_file
-            self.create_table_measures('temp')
-
-            # reset the temporary weather data table in database pertaining the schema
-            self.measures.drop(self.engine, checkfirst=True)
-            temporary_session.commit()
-
-            self.measures.create(self.engine, checkfirst=True)
-            temporary_session.commit()
-            self.logger.info(f"Reset table '{self.measures.name}'")
+            table_name = "temp"
+            self.data_weather.to_sql(table_name, con=self.database.connection, if_exists='replace', index=False)
+            self.logger.info(f"Transferred DataFrame containing weather data to temporary table '{table_name}'")
         except Exception:
             self.logger.exception("Error transferring DataFrame to Database")
 
     def delete_old_weather_data(self):
         """Deletes all existing data rows in temporary table that have an
         identical combination of Station_ID and Datum in the full database table"""
-        from sqlalchemy.sql import text
 
         try:
-            self.engine.execute(
+            self.database.connection.execute(
                 text("DELETE FROM temp WHERE (Stations_ID, Datum) "
-                     "IN (SELECT DISTINCT Stations_ID, Datum FROM measures);"
+                     "IN (SELECT DISTINCT Stations_ID, Datum FROM Wettermessung);"
                      ))
             self.logger.debug("Cleared duplicate data from temporary table")
         except Exception:
             self.logger.exception("Error clearing duplicate data from temporary table")
 
     def insert_new_weather_data(self):
-        from sqlalchemy.sql import text
 
         # TODO: get information from config_file
         try:
-            latest_dates = {"measure_before": self.engine.execute(text("SELECT Max(Datum) from measures;")).fetchall(),
-                        "temporal": self.engine.execute(text("SELECT Max(Datum) from temp;")).fetchall()}
+            latest_dates = {"measure_before": self.database.connection.execute(text("SELECT Max(Datum) from Wettermessung;")).fetchall(),
+                            "temporal": self.database.connection.execute(text("SELECT Max(Datum) from temp;")).fetchall()}
 
-            self.engine.execute(
-                text('INSERT INTO measures SELECT * FROM temp;'))
-            latest_dates["measure_after"] = self.engine.execute(text("SELECT Max(Datum) from measures;")).fetchall()
-            self.logger.info(f"Updated weather data: to last date {latest_dates['measure_after']} " \
-                             f"from last date {latest_dates['measure_before']}")
+            self.database.connection.execute(
+                text('INSERT INTO Wettermessung SELECT * FROM temp;'))
+            latest_dates["measure_after"] = self.database.connection.execute(text("SELECT Max(Datum) from Wettermessung;")).fetchall()
+            self.logger.info(f"Updated weather data: to new LATEST date {latest_dates['measure_after']} " 
+                             f"from old lasted date {latest_dates['measure_before']}")
             # print("Updated weather data measure. \n"
             # "├ Last date before update: {before}\n"
             # "└ Last date after update: {after}\n".format(before=latest_dates["measure_before"],

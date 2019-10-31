@@ -1,6 +1,8 @@
 env/
+venv/
 resources/_examples/
 external/
+config/config.ini
 
 .idea/
 .ipynb_checkpoints/
