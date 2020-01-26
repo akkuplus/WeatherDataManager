@@ -144,8 +144,13 @@ class MyLogger(logging.Logger):
         self = logging.getLogger()
         self.setLevel(logging.DEBUG)
 
-    def setup_handlers(self):
+    def setup_handlers(self, path=None):
         # TODO: save handlers and options in config-file
+
+        if path is None:
+            path = pathlib.Path.cwd()
+        if "app" in path.parts:
+            path = path.parent
 
         # create console handler with a higher log level
         consolhandler = logging.StreamHandler()
@@ -159,7 +164,7 @@ class MyLogger(logging.Logger):
         # create file handler which logs on level warnings and above
         #error_file =
         #error_file = get_setting(["error","log"])
-        error_file = pathlib.Path(".").absolute().joinpath(get_setting(["error","log"]))
+        error_file = path.joinpath(get_setting(["error","log"]))
         print (error_file)
 
         filehandler = logging.FileHandler(error_file)
@@ -219,13 +224,9 @@ class MyConfigurator(object):
 
 if __name__ == "__main__":
 
-    #tempConf = MyConfigurator()
-    print ( get_setting(["general", "data_dir"]) )
-
-
-    #tempLogger = MyLogger()
-    #print (tempLogger)
-    #tempLogger.setup_handlers()
-    #tempLogger.info(f"Logging works!")
+    tempLogger = MyLogger()
+    print (tempLogger)
+    tempLogger.setup_handlers()
+    tempLogger.info(f"Logging works!")
 
     #tempConnect = MyConnector()
