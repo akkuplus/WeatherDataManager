@@ -3,6 +3,9 @@ venv/
 resources/_examples/
 external/
 config/config.ini
+/config/cron_log.txt
+/config/log.txt
+/data/*_wetterdaten_CSV.zip
 
 .idea/
 .ipynb_checkpoints/
@@ -16,5 +19,4 @@ dist/
 build/
 *.egg-info/
 
-/config/cron_log.txt
-/config/log.txt
+
