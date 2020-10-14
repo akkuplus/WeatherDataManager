@@ -1,7 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
 import app.Helper
-
+from urllib.parse import urljoin
+from pathlib import Path
 
 
 class DataRequester(object):
@@ -57,37 +58,34 @@ class DataRequester(object):
         return
 
     def save_zip_locally(self):
-        """Load last weather data that is saved in zip."""
+        """Load last weather data from extracted link."""
         # example: url = 'https://dbup2date.uni-bayreuth.de/blocklysql/downloads/wetterdaten/2019-06-21_wetterdaten.zip'
-        import requests
-        import urllib.parse
-        from pathlib import Path
 
-        # load last remote zip file from web
-        r = None
-        full_url_zip = None
+        # REQUEST file
         try:
             # load last remote zip file
-            full_url_zip = urllib.parse.urljoin(self.url, self.last_zip_file)
-            r = requests.get(full_url_zip, allow_redirects=True, verify=False)
+            full_url_zip = urljoin(self.url, self.last_zip_file)
+            resp = requests.get(full_url_zip, allow_redirects=True, verify=False)
+            assert resp.status_code == 200, "Can't retrieve file"
+            assert resp.content, "File has no content."
+        except Exception as ex:
+            self.logger.exception(f"Error loading {self.last_zip_file} ({ex})")
+            raise
 
-            # get the filename of this zipfile
-            zip_file_name = self.last_zip_file.rsplit(sep="/", maxsplit=1)[-1]  # get the last element of url
-
-            # and create the "filepath" at "/data/*.zip"
-            data_dir = app.Helper.get_setting(["general", "data_dir"])
-            self.saved_zipfile_path = Path.cwd().joinpath(data_dir).joinpath(zip_file_name)
-            self.logger.debug(f"Created filepath for new zipfile")
-        except Exception:
-            self.logger.exception(f"Error loading {self.saved_zipfile_path}")
-
-        # save the loaded file under "filepath"
+        # SAVE loaded file in filepath
         try:
-            open(self.saved_zipfile_path, 'wb').write(r.content)
+            # CREATE the "filepath" at "/data/*.zip"
+            data_dir = app.Helper.get_setting(["general", "data_dir"])
+            self.saved_zipfile_path = Path.cwd().joinpath(data_dir).joinpath(self.last_zip_file)
+
+            # SAVE
+            open(self.saved_zipfile_path, 'wb').write(resp.content)
             self.logger.info(f"Saved {self.saved_zipfile_path} from {full_url_zip}")
-            dir(self.saved_zipfile_path)
         except Exception:
             self.logger.exception(f"Error writing {self.saved_zipfile_path}")
+            raise
+
+        return
 
     def run(self):
         """Process steps in order to collect new data."""
