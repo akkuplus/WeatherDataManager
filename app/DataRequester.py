@@ -13,7 +13,7 @@ class DataRequester(object):
     Request and save remote weather data locally in zip-file.
     """
 
-    def __init__(self, url: str = "https://dbup2date.uni-bayreuth.de/downloads/wetterdaten/"):
+    def __init__(self):
         """
         Initialize DataRequester with default settings.
 
@@ -25,7 +25,8 @@ class DataRequester(object):
 
         self.last_zip_file = ""
         self.saved_zipfile_path = ""
-        self.url = url  # wetterdaten_Wettermessung.csv"
+        self.url = app.Helper.get_setting(["general","url"])
+        # OLD self.url = url  # wetterdaten_Wettermessung.csv"
         # OLD self.url = "https://dbup2date.uni-bayreuth.de/blocklysql/"  # static link
 
         return
