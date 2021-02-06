@@ -7,10 +7,21 @@ from sqlalchemy.orm import sessionmaker
 
 
 def get_setting(value):
-    self = configparser.ConfigParser()
+    configs = configparser.ConfigParser()
     path = pathlib.Path(".").absolute().joinpath("config").joinpath("config.ini")
-    self.settings = self.read(str(path))
-    return self.get( value[0], value[1] )
+    successfully_read = configs.read(str(path))
+    if len(successfully_read) > 0:
+        return configs.get( value[0], value[1] )
+    else:
+        return None
+
+
+def get_project_path(project_path=None):
+    if project_path is None:
+        project_path = pathlib.Path.cwd()
+    if "app" in project_path.parts:
+        project_path = project_path.parent
+    return project_path
 
 
 class MyConnector(object):
@@ -27,8 +38,8 @@ class MyConnector(object):
         self.metadata = None
 
         try:
-
-            get_setting(["mysql","host"])
+            #TODO: FIX
+            connect_info = get_setting(["mysql","host"])
             self.logger.debug("Imported settings from file configfile")
         except Exception:
             self.logger.exception(f"Error reading settings")
@@ -36,7 +47,7 @@ class MyConnector(object):
         try:
             self.connect_database()
         except Exception:
-            self.logger.exception(f"Error connecting settings")
+            self.logger.exception(f"Error connecting to database with settings")
 
     def connect_database(self):
         """Connect to database."""
@@ -141,18 +152,13 @@ class MyLogger(logging.Logger):
 
     def __init__(self):
         super().__init__(__name__)
-        self = logging.getLogger()
+        #self = logging.getLogger()
         self.setLevel(logging.DEBUG)
 
     def setup_handlers(self, path=None):
         # TODO: save handlers and options in config-file
 
-        if path is None:
-            path = pathlib.Path.cwd()
-        if "app" in path.parts:
-            path = path.parent
-
-        # create console handler with a higher log level
+        # create console handler with a higher log level ""info""
         consolhandler = logging.StreamHandler()
         consolhandler.setLevel(logging.INFO)
         consol_formatter = logging.Formatter(
@@ -161,20 +167,19 @@ class MyLogger(logging.Logger):
         consolhandler.setFormatter(consol_formatter)
         self.addHandler(consolhandler)
 
-        # create file handler which logs on level warnings and above
-        #error_file =
-        #error_file = get_setting(["error","log"])
-        error_file = path.joinpath(get_setting(["error","log"]))
-        print (error_file)
+        # create file handler which logs on the levels ""warnings"" and above
+        log_file = get_setting(["error", "log"])
+        log_file_path = pathlib.Path(get_project_path()).joinpath(log_file)
+        assert log_file_path.exists(), "Path to Logfile does not exist."
 
-        filehandler = logging.FileHandler(error_file)
+        filehandler = logging.FileHandler(log_file_path)
         filehandler.setLevel(logging.DEBUG)
         file_formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - function:%(funcName)s - %(message)s')
         filehandler.setFormatter(file_formatter)
         self.addHandler(filehandler)
 
-        # TODO: implement email logging handler
+        # TODO: implement email logging handler, SCRATCH:
         if False:#self.config.getboolean("error", "send_email"):
             self.info(f"Using E-Mail Logging handler")
             # create email handler which notifies on level errors and above
@@ -193,24 +198,13 @@ class MyLogger(logging.Logger):
             self.addHandler(error_handler)
             self.error("TEST")
 
-
-
 """
-class MyLogger(logging.Logger):
+OLD (obsolete because of get_settings() function:
+class MyConfigurator(configparser.ConfigParser()):
 
     def __init__(self):
-        super().__init__(__name__)
-        self = logging.getLogger()
-        self.setLevel(logging.DEBUG)
-
-"""
-
-
-class MyConfigurator(object):
-
-    def __init__(self):
-        #super().__init__()
-        self = configparser.ConfigParser()
+        super().__init__()
+        #self = configparser.ConfigParser()
         path = pathlib.Path.cwd().parent.joinpath("config").joinpath("config.ini")
         print(path)
         self.settings = self.read(str(path))
@@ -220,7 +214,7 @@ class MyConfigurator(object):
         path = pathlib.Path.cwd().parent.joinpath("config").joinpath("config.ini")
         print(path)
         self.read(str(path))
-
+"""
 
 if __name__ == "__main__":
 

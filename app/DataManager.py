@@ -1,6 +1,6 @@
 """
 WeatherDataManager (WDM) retrieves data from url and imports newest values into a SQL table.
-The data consists of weather data stations and weather data measures. The WDM finds nearest
+The weather data consists of location of stations and data observations. The WDM finds nearest
 zip code next to each weather data station. The WDM enriches weather data with information
 from weather data station, and appends the newest data to an existing SQL table.
 """
@@ -11,9 +11,11 @@ from sqlalchemy.sql import text
 
 
 class DataManager(object):
-    """DataManager imports data of weather stations and weather measures,
+    """
+	DataManager imports data of weather stations and weather measures,
     finds the nearest zip code for a given data station,
-    and imports new weather measure to SQL table."""
+    and imports new weather measure to SQL table.
+	"""
 
     def __init__(self):
 
@@ -58,10 +60,12 @@ class DataManager(object):
 
 
     def find_last_zipfile(self):
-        """Finds the last zip file containing weather resources that is available in subdirectory 'resources'."""
+        """
+		Finds the last zip file containing weather resources that is available in subdirectory 'resources'.
+		"""
         from pathlib import Path
 
-        #data_dir = self.config.get()
+        # OLD: data_dir = self.config.get()
         data_dir = app.Helper.get_setting(["general", "data_dir"])
 
         self.saved_zipfile_path = Path.cwd().joinpath(data_dir)
@@ -70,7 +74,7 @@ class DataManager(object):
 
         try:
             # The filename of all saved zipfiles includes a date part.
-            # Thus, sort those filenames and take last available zipfile.
+            # So sort these filenames and take last available zipfile.
             self.saved_zipfile_path = sorted(self.saved_zipfile_path.glob(
                 '????-??-??_wetterdaten_CSV.zip'),
                 reverse=True)[0]
@@ -83,8 +87,10 @@ class DataManager(object):
             self.logger.exception()
 
     def last_zipfile_exists(self):
-        """Ensure a given zipfile name is a valid file and contains
-         some information and having around 800 kB in subfolder '/resources/'."""
+        """
+		Ensure a given zipfile name is a valid file and contains
+         some information and has around 800 kB in subfolder '/resources/'.
+		 """
         from pathlib import Path
 
         try:
@@ -98,8 +104,10 @@ class DataManager(object):
             self.logger.exception()
 
     def import_weather_stations(self):
-        """Import weather stations and corresponding data
-        from current locally saved zip file."""
+        """
+		Import weather stations and corresponding data
+        from locally saved zip file.
+		"""
         import pandas as pd
         import zipfile
 
@@ -122,7 +130,9 @@ class DataManager(object):
             self.logger.exception(f"Can't import {file_name} into DataFrame.")
 
     def import_weather_measures(self):
-        """Import weather measures at a given station. The corresponding data is from saved zip file."""
+        """
+		Import weather measures at a given station. The corresponding data is from saved zip file.
+		"""
         import pandas as pd
         import zipfile
 
@@ -146,9 +156,10 @@ class DataManager(object):
             self.logger.exception(f"Can't import {file_name} into a DataFrame.")
 
     def import_locational_data(self):
-        """Import locational data from a local csv file
-         that contains a mapping of zip codes
-          and their corresponding coordinates."""
+        """
+		Import locational data from a local csv file that contains a mapping of zip codes
+          and their corresponding coordinates.
+		 """
         import pandas as pd
         import numpy as np
 
@@ -252,7 +263,7 @@ class DataManager(object):
 
     def delete_old_weather_data(self):
         """Deletes all existing data rows in temporary table that have an
-        identical combination of Station_ID and Datum in the full database table"""
+        identical combination of Station_ID and Datum within the complete database table"""
 
         try:
             self.database.connection.execute(

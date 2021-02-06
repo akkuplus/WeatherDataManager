@@ -1,16 +1,23 @@
 from bs4 import BeautifulSoup
 import requests
-import app.Helper
+from requests.models import PreparedRequest
+import requests.exceptions
 from urllib.parse import urljoin
 from pathlib import Path
 
+import app.Helper
+
 
 class DataRequester(object):
-    """Request and save remote weather data locally in zip-file."""
+    """
+    Request and save remote weather data locally in zip-file.
+    """
 
-    def __init__(self, url: str = "https://dbup2date.uni-bayreuth.de/downloads/wetterdaten/wetterdaten_Wettermessung.csv"):
-        """Initialize Data Requester with default settings.
-            :param url Path to remote data source.
+    def __init__(self, url: str = "https://dbup2date.uni-bayreuth.de/downloads/wetterdaten/"):
+        """
+        Initialize DataRequester with default settings.
+
+        :param url Path to remote data source.
         """
 
         self.logger = app.Helper.MyLogger()
@@ -18,34 +25,50 @@ class DataRequester(object):
 
         self.last_zip_file = ""
         self.saved_zipfile_path = ""
-        self.url = url
+        self.url = url  # wetterdaten_Wettermessung.csv"
         # OLD self.url = "https://dbup2date.uni-bayreuth.de/blocklysql/"  # static link
 
         return
 
-    def get_distant_filename(self):
-        """Scrap HTML page to extract newest link."""
+    def get_checked_url(self):
+        """
+        Validate URL. See https://stackoverflow.com/questions/827557/how-do-you-validate-a-url-with-a-regular-expression-in-python
+        """
 
-        html_path = self.url
-        zip_file_url = None
-
-        # extract current link in html file
+        prepared_request = PreparedRequest()
         try:
+            prepared_request.prepare_url(self.url, None)
+            return prepared_request.url
+        except (requests.exceptions.MissingSchema, Exception):
+            raise requests.HTTPError
+
+    def get_distant_filename(self):
+        """
+        Scrap HTML page to extract newest link.
+        """
+
+        try:
+            # CHECK RegEx-Url-Pattern
+            self.get_checked_url()  # raises httperror
+            html_path = self.url
+
+            # EXTRACT current link in html file
             resp = requests.get(html_path, verify=False)
             soup = BeautifulSoup(resp.content, features="html.parser")
-            self.logger.debug(f"Found website and parsed html-file")
-
-            if resp.status_code == 404:
+            if (resp.status_code == 404) or not bool(soup):
                 raise requests.HTTPError
 
-        except requests.HTTPError as e:
+            self.logger.debug(f"Found website and parsed html-file")
+
+        except (requests.HTTPError, Exception) as e:
             self.logger.error(f"Connection to {html_path} failed. URL does not exist ({e}).")
             raise
 
-        # get distant zip file path
+        # GET distant zip file path
+        zip_file_url = None
         try:
             for link in soup.find_all('a', href=True):
-                if "CSV.zip" in link['href']:
+                if "wetterdaten_CSV.zip" in link['href']:
                     zip_file_url = link['href']  # example: "downloads\wetterdaten\2019-07-07_wetterdaten_CSV.zip"
                     break
 
@@ -81,7 +104,7 @@ class DataRequester(object):
             self.saved_zipfile_path = Path.cwd().joinpath(data_dir).joinpath(self.last_zip_file)
 
             # SAVE
-            open(self.saved_zipfile_path, 'wb').write(resp.content)
+            open(self.saved_zipfile_path.absolute(), 'wb').write(resp.content)
             self.logger.info(f"Saved {self.saved_zipfile_path} from {full_url_zip}")
         except Exception:
             self.logger.exception(f"Error writing {self.saved_zipfile_path}")

@@ -1,6 +1,7 @@
 # --trusted-host pypi.org --trusted-host files.pythonhosted.org
 beautifulsoup4
 requests
+pytest
 
 numpy
 pandas
