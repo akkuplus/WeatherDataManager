@@ -2,8 +2,9 @@ import logging
 import logging.handlers
 import pathlib
 import configparser
-import sqlalchemy as db
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, Column, DateTime, Float, Integer, MetaData, Table, String
+from sqlalchemy.orm import sessionmaker, scoped_session
+#from sqlalchemy import Table, Column, Integer, String,
 
 
 def get_setting(value):
@@ -26,102 +27,119 @@ def get_project_path(project_path=None):
 
 class MyConnector(object):
 
-    def __init__(self):
+    def __init__(self, db_system_name: str = "postgresql"):
 
         self.logger = None
         self.logger = MyLogger()
         self.logger.setup_handlers()
 
+        self.db_system_name = db_system_name
         self.connection = None
+        self.engine = None
         self.stations = None
         self.measures = None
         self.metadata = None
 
         try:
             #TODO: FIX
-            connect_info = get_setting(["mysql","host"])
-            self.logger.debug("Imported settings from file configfile")
-        except Exception:
-            self.logger.exception(f"Error reading settings")
+            connect_info = get_setting([db_system_name,"drivername"])
+            assert connect_info
+            self.logger.debug(f"Imported settings for {connect_info} from configfile")
+        except Exception as ex:
+            self.logger.exception(f"Error reading settings. {ex}")
 
         try:
-            self.connect_database()
+            self.connect_database(db_system_name)
+            tables = self.test_query()
+            self.logger.info(f"Successful connected to database. Database contains tables: {tables}")
         except Exception:
             self.logger.exception(f"Error connecting to database with settings")
 
-    def connect_database(self):
+    def connect_database(self, db_system_name: str = "postgresql"):
         """Connect to database."""
+
+        assert (db_system_name in ["postgresql", "mysql"]), "Name of dbms is unknown"
+
+        DATABASE_URI = get_setting([db_system_name, "drivername"]) + "://"\
+                         + get_setting([db_system_name, "user"]) + ":"\
+                         + get_setting([db_system_name, "passwd"]) + "@"\
+                         + get_setting([db_system_name, "host"]) + ":"\
+                         + get_setting([db_system_name, "port"]) + "/"\
+                         + get_setting([db_system_name, "database_name"])
+
+        """ OLD:
         connect_string = get_setting(["mysql", "drivername"]) + "://"\
                          + get_setting(["mysql", "user"]) + ":"\
                          + get_setting(["mysql", "passwd"]) + "@"\
                          + get_setting(["mysql", "host"]) + ":"\
                          + get_setting(["mysql", "port"]) + "/"\
                          + get_setting(["mysql", "database_name"])
-        self.logger.info(f"Connecting to: {get_setting(['mysql', 'host'])}")
+        """
+        self.logger.info(f"Connecting to: {get_setting([db_system_name, 'host'])}")
 
-        engine = db.create_engine(connect_string)  # create connection to database
-        self.connection = engine.connect()  # connect for interaction with database
-        self.metadata = db.MetaData()
-
-        self.logger.info(f"Successful connected to database. Database contains tables: {self.test_query()}")
+        self.engine = create_engine(DATABASE_URI, echo=True)
+        db = scoped_session(sessionmaker(bind=self.engine))
+        self.connection = self.engine.connect()
+        self.metadata = MetaData()
 
     def test_query(self):
-        return self.connection.execute("show tables;").fetchall()
+        self.create_table_measures('temporal_measures')
+        self.create_table_measures('Wettermessung')
+        self.create_table_stations()
+        #self.metadata.create_all(self.engine)
+        return self.engine.table_names()
 
     def create_table_stations(self):
         """Create schema for table of weather data stations."""
 
-        # TODO: request name-parameter from configuration_file
-        self.stations = db.Table(
-            'stations',
-            self.metadata,
-            db.Column('S_ID', db.Integer()),
-            db.Column('Standort', db.String(255), nullable=False),
-            db.Column('Geo_Breite', db.Float(), nullable=False),
-            db.Column('Geo_Laenge', db.Float(), nullable=False),
-            db.Column('Hoehe', db.Integer(), nullable=False),
-            db.Column('Betreiber', db.String(255), nullable=False),
-            db.Column('PLZ_matched', db.String(5), nullable=False),
-            db.Column('Ort_matched', db.String(255), nullable=False),
-            db.Column('Latitude_matched', db.Float(), nullable=False),
-            db.Column('Longitude_matched', db.Float(), nullable=False),
+        self.stations = Table(
+            'stations', self.metadata,
+            Column('S_ID', Integer()),
+            Column('Standort', String(255), nullable=False),
+            Column('Geo_Breite', Float(), nullable=False),
+            Column('Geo_Laenge', Float(), nullable=False),
+            Column('Hoehe', Integer(), nullable=False),
+            Column('Betreiber', String(255), nullable=False),
+            Column('PLZ_matched', String(5), nullable=False),
+            Column('Ort_matched', String(255), nullable=False),
+            Column('Latitude_matched', Float(), nullable=False),
+            Column('Longitude_matched', Float(), nullable=False),
             extend_existing=True
         )
         try:
-            self.stations.create(self.connection, checkfirst=True)  # Create the table
-            self.logger.info(f"Created a new table 'Wetterstation'")
+            self.stations.create(self.connection, checkfirst=True)  # If NOT exists, create the table.
+            self.logger.info(f"Created table 'stations'")
         except Exception:
             self.logger.exception("Error creating Table in Database")
 
-    def create_table_measures(self, table_name=None):
+    def create_table_measures(self, table_name="temp"):
         """Create schema for temporary table of weather data measures that extend existing data measures."""
 
         if table_name is None:
             table_name = input("Name of new table for weather data measures, e.g. 'temp'? ")
 
-        # TODO: request name-parameter from configuration_file
-        self.measures = db.Table(
+        self.measures = Table(
             table_name,
             self.metadata,
-            db.Column('Stations_ID', db.Integer(), nullable=False, primary_key=True),
-            db.Column('Datum', db.DateTime(), nullable=False, primary_key=True),
-            db.Column('Qualitaet', db.Integer(), nullable=True),
-            db.Column('Min_5cm', db.Float(), nullable=True),
-            db.Column('Min_2m', db.Float(), nullable=True),
-            db.Column('Mittel_2m', db.Float(), nullable=True),
-            db.Column('Max_2m', db.Float(), nullable=True),
-            db.Column('Relative_Feuchte', db.Float(), nullable=True),
-            db.Column('Mittel_Windstaerke', db.Float(), nullable=True),
-            db.Column('Max_Windgeschwindigkeit', db.Float(), nullable=True),
-            db.Column('Sonnenscheindauer', db.Float(), nullable=True),
-            db.Column('Mittel_Bedeckungsgrad', db.Float(), nullable=True),
-            db.Column('Niederschlagshoehe', db.Float(), nullable=True),
-            db.Column('Mittel_Luftdruck', db.Float(), nullable=True),
+            Column('Stations_ID', Integer(), nullable=False, primary_key=True),
+            Column('Datum', DateTime(), nullable=False, primary_key=True),
+            Column('Qualitaet', Integer(), nullable=True),
+            Column('Min_5cm', Float(), nullable=True),
+            Column('Min_2m', Float(), nullable=True),
+            Column('Mittel_2m', Float(), nullable=True),
+            Column('Max_2m', Float(), nullable=True),
+            Column('Relative_Feuchte', Float(), nullable=True),
+            Column('Mittel_Windstaerke', Float(), nullable=True),
+            Column('Max_Windgeschwindigkeit', Float(), nullable=True),
+            Column('Sonnenscheindauer', Float(), nullable=True),
+            Column('Mittel_Bedeckungsgrad', Float(), nullable=True),
+            Column('Niederschlagshoehe', Float(), nullable=True),
+            Column('Mittel_Luftdruck', Float(), nullable=True),
             extend_existing=True
         )
         try:
-            self.measures.create(self.connection, checkfirst=True)  # Create the table
-            self.logger.info(f"Created a new table 'Wettermessung'")
+            self.measures.create(self.connection, checkfirst=True)  # If NOT exists, create the table.
+            self.logger.info(f"Created table '{table_name}'")
         except Exception:
             self.logger.exception("Error creating Table in Database")
 
@@ -134,8 +152,7 @@ class MyConnector(object):
             temporary_session = session()
 
             # create schema for table measure
-            # TODO: request name-parameter from configuration_file
-            self.create_table_measures('temp')
+            self.create_table_measures('temporal_measures')
 
             # reset the temporary weather data table in database pertaining the schema
             self.measures.drop(self.connection, checkfirst=True)
@@ -143,9 +160,9 @@ class MyConnector(object):
 
             self.measures.create(self.connection, checkfirst=True)
             temporary_session.commit()
-            self.logger.info(f"Reset table '{self.measures.name}' consisting of 'Wettermessung'")
+            self.logger.info(f"Reset table '{self.measures.name}'")
         except Exception:
-            self.logger.exception("Error transferring DataFrame to Database")
+            self.logger.exception("Error transferring recreating Database")
 
 
 class MyLogger(logging.Logger):
