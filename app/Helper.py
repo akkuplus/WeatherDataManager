@@ -41,7 +41,6 @@ class MyConnector(object):
         self.metadata = None
 
         try:
-            #TODO: FIX
             connect_info = get_setting([db_system_name,"drivername"])
             assert connect_info
             self.logger.debug(f"Imported settings for {connect_info} from configfile")
@@ -49,9 +48,11 @@ class MyConnector(object):
             self.logger.exception(f"Error reading settings. {ex}")
 
         try:
-            self.connect_database(db_system_name)
-            tables = self.test_query()
-            self.logger.info(f"Successful connected to database. Database contains tables: {tables}")
+            if is_connected := self.connect_database(db_system_name):
+                tables = self.test_query()
+                self.logger.info(f"Successfully connected to database. Database contains tables: {tables}")
+            else:
+                self.logger.error(f"Error connecting to database.")
         except Exception:
             self.logger.exception(f"Error connecting to database with settings")
 
@@ -67,33 +68,30 @@ class MyConnector(object):
                          + get_setting([db_system_name, "port"]) + "/"\
                          + get_setting([db_system_name, "database_name"])
 
-        """ OLD:
-        connect_string = get_setting(["mysql", "drivername"]) + "://"\
-                         + get_setting(["mysql", "user"]) + ":"\
-                         + get_setting(["mysql", "passwd"]) + "@"\
-                         + get_setting(["mysql", "host"]) + ":"\
-                         + get_setting(["mysql", "port"]) + "/"\
-                         + get_setting(["mysql", "database_name"])
-        """
         self.logger.info(f"Connecting to: {get_setting([db_system_name, 'host'])}")
 
-        self.engine = create_engine(DATABASE_URI, echo=True)
-        db = scoped_session(sessionmaker(bind=self.engine))
-        self.connection = self.engine.connect()
-        self.metadata = MetaData()
+        try:
+            self.engine = create_engine(DATABASE_URI, echo=True)
+            self.connection = self.engine.connect()
+            self.metadata = MetaData()
+        except Exception as ex:
+            self.logger.warning(f"Error connecting to Database. {ex}")
+
+        return True if self.connection else False
+
 
     def test_query(self):
         self.create_table_measures('temporal_measures')
-        self.create_table_measures('Wettermessung')
-        self.create_table_stations()
+        self.create_table_measures('measures')
+        self.create_table_stations('stations')
         #self.metadata.create_all(self.engine)
         return self.engine.table_names()
 
-    def create_table_stations(self):
+    def create_table_stations(self, table_name="stations"):
         """Create schema for table of weather data stations."""
 
         self.stations = Table(
-            'stations', self.metadata,
+            table_name, self.metadata,
             Column('S_ID', Integer()),
             Column('Standort', String(255), nullable=False),
             Column('Geo_Breite', Float(), nullable=False),
