@@ -111,6 +111,8 @@ class DataManager(object):
 
         # create DataFrame
         try:
+            assert self.saved_zipfile_path.exists(), f"Path of Zipfile does not exist."
+
             with zipfile.ZipFile(self.saved_zipfile_path) as local_zip:
                 with local_zip.open(file_name) as csv_file:
                     self.data_stations = pd.read_csv(
@@ -122,8 +124,8 @@ class DataManager(object):
                         encoding='cp1250')  # convert typical german encoding
             del self.data_stations["Unnamed: 6"]  # delete last column because of trailing ";" in csv file
             self.logger.info("Imported into DataFrame")
-        except ImportError:
-            self.logger.exception(f"Can't import {file_name} into DataFrame.")
+        except (ImportError, Exception) as ex:
+            self.logger.exception(f"Error importing {file_name} to DataFrame. {ex}")
 
     def import_weather_measures(self):
         """
@@ -135,6 +137,8 @@ class DataManager(object):
 
         # create DataFrame
         try:
+            assert self.saved_zipfile_path.exists(), f"Path of Zipfile does not exist."
+
             with zipfile.ZipFile(self.saved_zipfile_path) as local_zip:
                 with local_zip.open(file_name) as csv_file:
                     self.data_weather = pd.read_csv(
@@ -147,8 +151,9 @@ class DataManager(object):
                         encoding='cp1250')  # convert typical german encoding
             del self.data_weather["Unnamed: 14"]  # delete last column because of trailing ";" in csv file
             self.logger.info("Imported into DataFrame")
-        except ImportError:
-            self.logger.exception(f"Can't import {file_name} into a DataFrame.")
+
+        except (ImportError, Exception) as ex:
+            self.logger.exception(f"Error importing {file_name} to DataFrame. {ex}")
 
     def import_locational_data(self):
         """
@@ -171,6 +176,8 @@ class DataManager(object):
 
         # create DataFrame
         try:
+            assert Path(file_name).exists(), f"Local geodata.csv file does not exists on path."
+
             self.mapping_zipcode_coordinates = pd.read_csv(
                 file_name,
                 delimiter=";",  # ensure utf-encoding, ensure delimiter ";"
@@ -186,8 +193,9 @@ class DataManager(object):
                 # converters = {"Plz": cast_to_str}
             )
             self.logger.info("Imported into DataFrame")
-        except ImportError:
-            self.logger.exception(f"Can't import {file_name} to DataFrame 'mapping_zipcode_coordinates'.")
+
+        except (ImportError, Exception) as ex:
+            self.logger.error(f"Error importing {file_name} to DataFrame 'mapping_zipcode_coordinates'. {ex}")
 
     def enrich_data_stations(self):
         """Appends four columns to existing DataFrame 'data_stations'."""
