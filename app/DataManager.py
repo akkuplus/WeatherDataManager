@@ -5,9 +5,15 @@ zip code next to each weather data station. The WDM enriches weather data with i
 from weather data station, and appends the newest data to an existing SQL table.
 """
 
+from datetime import datetime
 import numpy as np
 import pandas as pd
 from pathlib import Path
+from sqlalchemy import delete
+from sqlalchemy import insert
+from sqlalchemy import func
+from sqlalchemy import select
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import text
 import zipfile
 
@@ -50,7 +56,7 @@ class DataManager(object):
             self.enrich_data_stations()
             self.get_nearest_zipcode()
 
-            self.database.reset_temporal_table()
+            self.database.clear_temporal_table()
             self.sql_from_weather_measures()
             self.delete_old_weather_data()
             self.insert_new_weather_data()  # show changes in last date of weather date
@@ -144,6 +150,7 @@ class DataManager(object):
                     self.data_weather = pd.read_csv(
                         csv_file,
                         parse_dates=["Datum"],
+                        date_parser=lambda x: datetime.strptime(x, "%Y-%m-%d"),
                         delimiter=";",  # ensure utf-encoding, ensure delimiter ";"
                         index_col=False,
                         header=0,
@@ -266,42 +273,53 @@ class DataManager(object):
 
     def delete_old_weather_data(self):
         """Deletes all existing data rows in temporary table that have an
-        identical combination of Station_ID and Datum within the complete database table"""
+        identical combination of (Station_ID and Datum) within the complete database table"""
+        from sqlalchemy.sql import text
+
         temporal_table_name = "temporal_measures"
         try:
-            self.database.connection.execute(
-                text(f"DELETE FROM {temporal_table_name} WHERE ('{temporal_table_name}.Stations_ID', '{temporal_table_name}.Datum') "
-                     "IN (SELECT DISTINCT 'Stations_ID', 'Datum' FROM measures);"
-                     ))
+            delete_statement = text(f'Delete from {temporal_table_name} where "Datum" <= (Select max("Datum") from measures);')
+
+            # delete_statement = text(f"DELETE FROM {temporal_table_name} WHERE ('{temporal_table_name}.Stations_ID', '{temporal_table_name}.Datum') "
+            #          "IN (SELECT DISTINCT 'measures.Stations_ID', 'measures.Datum' FROM measures);"
+            #)
+            res = self.database.connection.execute( delete_statement )
             self.logger.debug("Cleared duplicate data from temporary table")
         except Exception:
             self.logger.exception("Error clearing duplicate data from temporary table")
 
     def insert_new_weather_data(self):
 
+        Session = sessionmaker(bind=self.database.engine)
+        session = Session()
+
         temporal_table_name = "temporal_measures"
-        try:
+        temporal_table_object = self.database.metadata.tables.get(temporal_table_name)
+
+        persistent_table_object = self.database.metadata.tables.get("measures")
+        try:  # https://stackoverflow.com/questions/12941416/how-to-count-rows-with-select-count-with-sqlalchemy
             # GET last Date before Insert
+
+            max_persistent_table = session.query(func.max(persistent_table_object.columns["Datum"])).scalar()
+            max_temporal_table = session.query(func.max(temporal_table_object.columns["Datum"])).scalar()
+
             latest_dates = {
-                "measure_before": self.database.connection.execute(text("SELECT Max(Datum) from measures;")).fetchall(),
-                "temporal": self.database.connection.execute(text(f"SELECT Max(Datum) from {temporal_table_name};")).fetchall()
+                "measure_before": max_persistent_table,
+                "temporal": max_temporal_table
             }
 
             # Insert transaction
-            self.database.connection.execute(
-                text(f"INSERT INTO Wettermessung SELECT * FROM {temporal_table_name};")
-            )
+            self.database.connection.execute(text(f'INSERT INTO "measures" SELECT * FROM {temporal_table_name};'))
 
             # GET last Date after Insert
-            latest_dates["measure_after"] = self.database.connection.execute(text("SELECT Max(Datum) from measures;")).fetchall()
+            latest_dates["measure_after"] = session.query(func.max(persistent_table_object.columns["Datum"])).scalar()
 
             # SHOW newer dates
-            self.logger.info(f"Updated weather data: to new LATEST date {latest_dates['measure_after']} " 
-                             f"from old lasted date {latest_dates['measure_before']}")
+            self.logger.info(f"Updated weather data: to new LATEST date '{latest_dates['measure_after']}' " 
+                             f"from old lasted date '{latest_dates['measure_before']}'")
             # print("Updated weather data measure. \n"
             # "├ Last date before update: {before}\n"
             # "└ Last date after update: {after}\n".format(before=latest_dates["measure_before"],
             #        after=latest_dates["measure_after"]))
-        except Exception:
-            self.logger.exception("Error updating/integrating new weather_data into permanent database table {}")
-
+        except Exception as ex:
+            self.logger.exception(f"Error updating/integrating new weather data into permanent database table 'measure'. {ex}")

@@ -2,9 +2,8 @@ import logging
 import logging.handlers
 import pathlib
 import configparser
-from sqlalchemy import create_engine, Column, DateTime, Float, Integer, MetaData, Table, String
+from sqlalchemy import create_engine, Column, DateTime, BigInteger, Float, Integer, MetaData, Table, String
 from sqlalchemy.orm import sessionmaker, scoped_session
-#from sqlalchemy import Table, Column, Integer, String,
 
 
 def get_setting(value):
@@ -41,20 +40,18 @@ class MyConnector(object):
         self.metadata = None
 
         try:
-            connect_info = get_setting([db_system_name,"drivername"])
-            assert connect_info
+            connect_info = get_setting([db_system_name, "drivername"])
+            assert bool(connect_info), f"Error reading settings."
             self.logger.debug(f"Imported settings for {connect_info} from configfile")
-        except Exception as ex:
-            self.logger.exception(f"Error reading settings. {ex}")
 
-        try:
-            if is_connected := self.connect_database(db_system_name):
-                tables = self.test_query()
-                self.logger.info(f"Successfully connected to database. Database contains tables: {tables}")
-            else:
-                self.logger.error(f"Error connecting to database.")
-        except Exception:
-            self.logger.exception(f"Error connecting to database with settings")
+            is_connected = self.connect_database(db_system_name)
+            assert bool(is_connected), f"Error connecting to database and creating tables."
+            tables = self.test_query()
+            self.logger.info(f"Successfully connected to database. Database contains tables: {tables}")
+        except AssertionError as ae:
+            self.logger.exception(f"Error connecting to database since assertion {ae}")
+        except Exception as ex:
+            self.logger.exception(f"Error connecting to database. Error: {ex}")
 
     def connect_database(self, db_system_name: str = "postgresql"):
         """Connect to database."""
@@ -73,17 +70,27 @@ class MyConnector(object):
         try:
             self.engine = create_engine(DATABASE_URI, echo=True)
             self.connection = self.engine.connect()
-            self.metadata = MetaData()
+            self.metadata = MetaData(self.engine)
+            self.create_all_tables()
         except Exception as ex:
             self.logger.warning(f"Error connecting to Database. {ex}")
 
-        return True if self.connection else False
+        return self.required_tables_exist()
 
+    def create_all_tables(self):
+        assert bool(self.metadata), f"Metadata for schemas does not exist."
+
+        self.create_table_stations()
+        self.create_table_measures("measures")
+        self.create_table_measures("temporal_measures", CHECKFIRST=False)
+
+    def required_tables_exist(self):
+        return {"stations", "measures"}.issubset(set(self.metadata.tables))
 
     def test_query(self):
-        self.create_table_measures('temporal_measures')
-        self.create_table_measures('measures')
-        self.create_table_stations('stations')
+        #self.create_table_measures('temporal_measures')
+        #self.create_table_measures('measures')
+        #self.create_table_stations('stations')
         #self.metadata.create_all(self.engine)
         return self.engine.table_names()
 
@@ -110,13 +117,13 @@ class MyConnector(object):
         except Exception:
             self.logger.exception("Error creating Table in Database")
 
-    def create_table_measures(self, table_name="temp"):
+    def create_table_measures(self, table_name="temporal_measures", CHECKFIRST=True):
         """Create schema for temporary table of weather data measures that extend existing data measures."""
 
         if table_name is None:
             table_name = input("Name of new table for weather data measures, e.g. 'temp'? ")
 
-        self.measures = Table(
+        table_measures = Table(
             table_name,
             self.metadata,
             Column('Stations_ID', Integer(), nullable=False, primary_key=True),
@@ -133,34 +140,36 @@ class MyConnector(object):
             Column('Mittel_Bedeckungsgrad', Float(), nullable=True),
             Column('Niederschlagshoehe', Float(), nullable=True),
             Column('Mittel_Luftdruck', Float(), nullable=True),
-            extend_existing=True
+            extend_existing=False
         )
         try:
-            self.measures.create(self.connection, checkfirst=True)  # If NOT exists, create the table.
+            self.logger.info(f"Checkfirst is '{CHECKFIRST}' for creating tables {table_name} ")
+            table_measures.create(self.connection, checkfirst=CHECKFIRST)  # If NOT exists, create the table.
+            if table_name == "measures":
+                self.measures = table_measures
             self.logger.info(f"Created table '{table_name}'")
         except Exception:
-            self.logger.exception("Error creating Table in Database")
+            self.logger.exception(f"Error creating Table {table_name} in Database")
 
-    def reset_temporal_table(self):
+    def clear_temporal_table(self):
         """Recreate temporal weather resources table with identical schema in database."""
 
         try:
+            table_name = "temporal_measures"
             session = sessionmaker()
             session.configure(bind=self.connection)
             temporary_session = session()
 
-            # create schema for table measure
-            self.create_table_measures('temporal_measures')
+            # clear the temporary weather data table in database pertaining the schema
+            temporal_measures = self.metadata.tables[table_name]
+            clear_statement = temporal_measures.delete()
+            res = self.connection.execute(clear_statement)
 
-            # reset the temporary weather data table in database pertaining the schema
-            self.measures.drop(self.connection, checkfirst=True)
             temporary_session.commit()
 
-            self.measures.create(self.connection, checkfirst=True)
-            temporary_session.commit()
-            self.logger.info(f"Reset table '{self.measures.name}'")
+            self.logger.info(f"Cleared table '{table_name}'")
         except Exception:
-            self.logger.exception("Error transferring recreating Database")
+            self.logger.exception("Error clearing Database")
 
 
 class MyLogger(logging.Logger):
