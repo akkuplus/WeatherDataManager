@@ -274,7 +274,6 @@ class DataManager(object):
     def delete_old_weather_data(self):
         """Deletes all existing data rows in temporary table that have an
         identical combination of (Station_ID and Datum) within the complete database table"""
-        from sqlalchemy.sql import text
 
         temporal_table_name = "temporal_measures"
         try:
