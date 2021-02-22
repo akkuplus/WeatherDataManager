@@ -5,21 +5,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile_app
-    
     restart: on-failure
-    
-    networks:
-      - gateway
-     
-    depends_on: 
-       - database
+    networks: gateway
+    depends_on: database
 
 
   database:
     restart: always
     image: postgres:13-alpine
-    ports:
-      - 5432:5432
+    ports: 5432:5432
     environment:
       - POSTGRES_DB=wetetrdaten
       - POSTGRES_USER=postgres
@@ -31,11 +25,11 @@ services:
       interval: 10s
       retries: 10
     
-    networks:
-      - gateway
+    networks: gateway
 
     volumes:
-      #- database-data:/var/lib/postgresql/data/ # persist data even if container shuts down
+      #- database-data:/var/lib/postgresql/data/ # Named Volume persistiert Daten.
+      # VORSICHT, für neue Konfiguration löschen!
       - ./config/init.sql:/docker-entrypoint-initdb.d/init.sql
 
 #volumes:
