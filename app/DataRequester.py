@@ -105,6 +105,8 @@ class DataRequester(object):
             self.saved_zipfile_path = Path.cwd().joinpath(data_dir).joinpath(self.last_zip_file)
 
             # SAVE
+            self.logger.info(f"Data-directory is set to: {data_dir}")
+            Path(data_dir).mkdir(parents=True, exist_ok=True)
             open(self.saved_zipfile_path.absolute(), 'wb').write(resp.content)
             self.logger.info(f"Saved {self.saved_zipfile_path} from {full_url_zip}")
         except Exception:
