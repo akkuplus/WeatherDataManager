@@ -1,0 +1,45 @@
+version: '3.6'
+
+services:
+  weatherservice:
+    build:
+      context: .
+      dockerfile: Dockerfile_app
+    
+    restart: on-failure
+    
+    networks:
+      - gateway
+     
+    depends_on: 
+       - database
+
+
+  database:
+    restart: always
+    image: postgres:13-alpine
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_DB=wetetrdaten
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "postgres" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    
+    networks:
+      - gateway
+
+    volumes:
+      #- database-data:/var/lib/postgresql/data/ # persist data even if container shuts down
+      - ./config/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+#volumes:
+#  database-data: # named volumes can be managed easier using docker-compose
+  
+networks:
+  gateway: {}

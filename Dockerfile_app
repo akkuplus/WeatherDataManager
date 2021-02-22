@@ -1,0 +1,20 @@
+FROM        python:3.8-slim
+
+RUN 		mkdir /code
+
+COPY 		start.py /code/start.py
+COPY        ./app /code/app
+COPY        ./data/2021-01-24_wetterdaten_CSV.zip /code/data/2021-01-24_wetterdaten_CSV.zip
+COPY        ./data/geodaten_de.csv /code/data/geodaten_de.csv
+COPY        ./config /code/config
+COPY        ./test /code/test
+COPY 		requirements.txt /code/
+
+RUN         apt-get update
+#RUN         apt-get install nano
+
+WORKDIR 	/code
+RUN         pip install --upgrade pip
+RUN         pip install -r /code/requirements.txt
+
+#ENTRYPOINT  python3
