@@ -1,10 +1,13 @@
 # --trusted-host pypi.org --trusted-host files.pythonhosted.org
 beautifulsoup4~=4.9.3
-requests~=2.24.0
-pytest~=6.1.1
-SQLAlchemy
-psycopg2-binary
-
 numpy~=1.19.2
+requests~=2.24.0
+SQLAlchemy~=1.3.20
 pandas~=1.1.3
-sqlalchemy~=1.3.20
+pytest~=6.1.1
+psycopg2-binary
+validators~=0.18.2
+
+
+
+
