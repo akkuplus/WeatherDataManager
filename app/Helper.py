@@ -2,18 +2,31 @@ import logging
 import logging.handlers
 import pathlib
 import configparser
+from socket import *
 from sqlalchemy import create_engine, Column, DateTime, BigInteger, Float, Integer, MetaData, Table, String
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 
-def get_setting(value):
+def get_setting(value: list):
+    """
+
+    :param value: List containing [<an empty list>], ["<section>"], ["<section>","<option in section>"]
+    :return: all sections (if list empty),
+                all option (if list contains section), or option (if list contains section and option)
+    """
     configs = configparser.ConfigParser()
-    path = pathlib.Path(".").absolute().joinpath("config").joinpath("config.ini")
+    project_path = get_project_path()
+    path = pathlib.Path(project_path).absolute().joinpath("config").joinpath("config.ini")
     successfully_read = configs.read(str(path))
-    if len(successfully_read) > 0:
-        return configs.get( value[0], value[1] )
-    else:
-        return None
+
+    assert len(successfully_read) > 0, "Keine Konfiguration geladen."
+
+    if len(value) == 0:
+        return configs.sections()
+    elif len(value) == 1:
+        return configs.options(value[0])  # returns all option in section
+    elif len(value) == 2:
+        return configs.get(value[0], value[1])  # returns given option ins section
 
 
 def get_project_path(project_path=None):
@@ -21,7 +34,34 @@ def get_project_path(project_path=None):
         project_path = pathlib.Path.cwd()
     if "app" in project_path.parts:
         project_path = project_path.parent
+    if "tests" in project_path.parts:
+        project_path = project_path.parent
     return project_path
+
+
+def check_host(host='localhost', port=1025, response_code="220", check_response=True):
+    """
+    Test if (email) host is healthy.
+    :param host:
+    :return: True if healthy, else False.
+    """
+
+    # Create socket and establish a TCP connection
+    client_socket = socket(AF_INET, SOCK_STREAM)
+    error_code = client_socket.connect_ex((host, int(port)))
+    # function connect_ex. It doesn't throw an exception.
+    # Instead of that, returns a C style integer value (referred to as errno in C)
+    # See: https://stackoverflow.com/questions/177389/testing-socket-connection-in-python
+
+    # Evaluate answer
+    recv = client_socket.recv(1024)
+    # Example recv == b'220 mailhog.example ESMTP MailHog\r\n'
+    if check_response:
+        client_socket.close()
+        return True if response_code in str(recv) else False
+
+    else:
+        return True if error_code == 0 else False
 
 
 class MyConnector(object):
@@ -30,7 +70,7 @@ class MyConnector(object):
 
         self.logger = None
         self.logger = MyLogger()
-        self.logger.setup_handlers()
+        self.logger.setup_handlers(["EMAIL", "FILE", "CONSOLE"])
 
         self.db_system_name = db_system_name
         self.connection = None
@@ -47,7 +87,7 @@ class MyConnector(object):
             is_connected = self.connect_database(db_system_name)
             assert bool(is_connected), f"Error connecting to database and creating tables."
             tables = self.test_query()
-            self.logger.info(f"Successfully connected to database. Database contains tables: {tables}")
+            self.logger.debug(f"Successfully connected to database. Database contains tables: {tables}")
         except AssertionError as ae:
             self.logger.exception(f"Error connecting to database since assertion {ae}")
         except Exception as ex:
@@ -65,10 +105,10 @@ class MyConnector(object):
                          + get_setting([db_system_name, "port"]) + "/"\
                          + get_setting([db_system_name, "database_name"])
 
-        self.logger.info(f"Connecting to: {get_setting([db_system_name, 'host'])}")
+        self.logger.debug(f"Connecting to: {get_setting([db_system_name, 'host'])}")
 
         try:
-            self.engine = create_engine(DATABASE_URI, echo=True)
+            self.engine = create_engine(DATABASE_URI, echo=False)
             self.connection = self.engine.connect()
             self.metadata = MetaData(self.engine)
             self.create_all_tables()
@@ -82,7 +122,7 @@ class MyConnector(object):
 
         self.create_table_stations()
         self.create_table_measures("measures")
-        self.create_table_measures("temporal_measures", CHECKFIRST=False)
+        self.create_table_measures("temporal_measures", CHECKFIRST=True)
 
     def required_tables_exist(self):
         return {"stations", "measures"}.issubset(set(self.metadata.tables))
@@ -113,7 +153,7 @@ class MyConnector(object):
         )
         try:
             self.stations.create(self.connection, checkfirst=True)  # If NOT exists, create the table.
-            self.logger.info(f"Created table 'stations'")
+            self.logger.debug(f"Created table 'stations'")
         except Exception:
             self.logger.exception("Error creating Table in Database")
 
@@ -143,11 +183,11 @@ class MyConnector(object):
             extend_existing=False
         )
         try:
-            self.logger.info(f"Checkfirst is '{CHECKFIRST}' for creating tables {table_name} ")
+            self.logger.debug(f"Checkfirst is '{CHECKFIRST}' for creating tables {table_name} ")
             table_measures.create(self.connection, checkfirst=CHECKFIRST)  # If NOT exists, create the table.
             if table_name == "measures":
                 self.measures = table_measures
-            self.logger.info(f"Created table '{table_name}'")
+            self.logger.debug(f"Created table '{table_name}'")
         except Exception:
             self.logger.exception(f"Error creating Table {table_name} in Database")
 
@@ -167,7 +207,7 @@ class MyConnector(object):
 
             temporary_session.commit()
 
-            self.logger.info(f"Cleared table '{table_name}'")
+            self.logger.debug(f"Cleared table '{table_name}'")
         except Exception:
             self.logger.exception("Error clearing Database")
 
@@ -179,48 +219,56 @@ class MyLogger(logging.Logger):
         #self = logging.getLogger()
         self.setLevel(logging.DEBUG)
 
-    def setup_handlers(self, path=None):
-        # TODO: save handlers and options in config-file
+    def setup_handlers(self, list_of_logger: list = []):
 
-        # create console handler with a higher log level ""info""
-        consolhandler = logging.StreamHandler()
-        consolhandler.setLevel(logging.INFO)
-        consol_formatter = logging.Formatter(
-            '%(levelname)s function %(funcName)s: %(message)s'
-            )
-        consolhandler.setFormatter(consol_formatter)
-        self.addHandler(consolhandler)
+        if "CONSOLE" in list_of_logger:
+            # create CONSOLE handler with a log level "DEBUG"
+            consolhandler = logging.StreamHandler()
+            consolhandler.setLevel(logging.DEBUG)
+            consol_formatter = logging.Formatter(
+                '%(levelname)s function %(funcName)s: %(message)s'
+                )
+            consolhandler.setFormatter(consol_formatter)
 
-        # create file handler which logs on the levels ""warnings"" and above
-        log_file = get_setting(["error", "log"])
-        log_file_path = pathlib.Path(get_project_path()).joinpath(log_file)
-        assert log_file_path.exists(), "Path to Logfile does not exist."
+            self.addHandler(consolhandler)
+            print("Set console handler")
 
-        filehandler = logging.FileHandler(log_file_path)
-        filehandler.setLevel(logging.DEBUG)
-        file_formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - function:%(funcName)s - %(message)s')
-        filehandler.setFormatter(file_formatter)
-        self.addHandler(filehandler)
+        if "FILE" in list_of_logger:
+            # create FILE handler which logs on the levels ""warnings"" and above
+            log_file = get_setting(["error", "log"])
+            log_file_path = pathlib.Path(get_project_path()).joinpath(log_file)
+            assert log_file_path.exists(), "Path to Logfile does not exist."
 
-        # TODO: implement email logging handler, SCRATCH:
-        if False:#self.config.getboolean("error", "send_email"):
-            self.info(f"Using E-Mail Logging handler")
-            # create email handler which notifies on level errors and above
+            filehandler = logging.FileHandler(log_file_path)
+            filehandler.setLevel(logging.DEBUG)
+            file_formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - function:%(funcName)s - %(message)s')
+            filehandler.setFormatter(file_formatter)
 
-            error_handler = logging.handlers.SMTPHandler(
-                mailhost=("localhost", 25),
-                fromaddr="me@me.de",
-                toaddrs=[self.config.get("error", "recipients")],
-                subject="Error WeatherDataManager",
-            )
-            error_handler.setLevel(logging.WARNING)
+            self.addHandler(filehandler)
+            print("Set file handler")
+
+        if "EMAIL" in list_of_logger:
+            #get_setting(["error","send_email"]).upper() == "TRUE":
+
+            mailhost = {"host": 'smtp', "port": 1025,
+                        "response_code": "220", "check_response": True}
+            #mailhost = {"host": 'localhost', "port": 1025}
+            assert check_host(**mailhost), "Email host is not available"
+
+            connection_paras = (mailhost["host"], mailhost["port"])
+            email_handler = logging.handlers.SMTPHandler(connection_paras, 'WeatherData@Docker.Service',
+                                              ['status@corporate.admin'],
+                                              'WeatherDataService', credentials=None, secure=None)
+            email_handler.setLevel(logging.INFO)
             formatter = logging.Formatter(
                 '%(asctime)s - %(name)s - %(levelname)s - function:%(funcName)s - %(message)s')
-            # error_handler.setFormatter(logging.Formatter(formatter))
-            error_handler.setFormatter(formatter)
-            self.addHandler(error_handler)
-            self.error("TEST")
+            email_handler.setFormatter(formatter)
+
+            self.addHandler(email_handler)
+            print("Set email handler")
+            self.info("Initialized email logging.")
+
 
 """
 OLD (obsolete because of get_settings() function:
